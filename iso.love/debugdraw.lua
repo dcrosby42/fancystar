@@ -117,4 +117,11 @@ D.drawWireframes = function(boxes)
   end
 end
 
+D.drawWireframesOpaque = function(boxes)
+  for i=1,#boxes do
+    local box = boxes[i]
+    drawWireframeBoxOpaque(box)
+  end
+end
+
 return D
