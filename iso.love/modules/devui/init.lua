@@ -20,7 +20,7 @@ end
 
 local concrete003 = "images/concrete003.png"
 local blender_cube = "images/blender_cube.png"
-local maya = "images/maya.png"
+local maya = "images/maya_trans.png"
 -- local blender_cube = "images/blender_cube_copy.png"
 
 local Unit = {1,1,1}
@@ -131,7 +131,8 @@ function drawHeadsup(model)
   love.graphics.setColor(0,0,0)
   love.graphics.print("Screen: "..model.dbg.screen.offx..","..model.dbg.screen.offy,0,0)
   local cp = model.dbg.cursor.pos
-  love.graphics.print("Cursor: "..cp[1]..","..cp[2]..","..cp[3],0,10)
+  love.graphics.print("Cursor: "..cp[1]..","..cp[2]..","..cp[3],0,12)
+  love.graphics.print("Map Scale: "..model.dbg.mapScale,0,24)
 
   love.graphics.setColor(255,255,255)
   love.graphics.pop()
@@ -170,7 +171,7 @@ local function drawMaya(model)
   -- print("maya "..img:getWidth().." "..img:getHeight())
   love.graphics.draw(
     img,
-    100,100,                               -- location
+    200,200,                               -- location
     0,                                 -- rotation
     1,1,                               -- size
     0,0                                -- xoff,yoff
@@ -180,7 +181,6 @@ end
 local function drawWorld(model)
   local dbg = model.dbg
 
-  drawMaya(model)
 
   love.graphics.push()
   love.graphics.translate(dbg.screen.offx, dbg.screen.offy)
@@ -203,6 +203,7 @@ local function drawWorld(model)
 
   love.graphics.pop()
 
+  drawMaya(model)
 
   if model.dbg.flags.drawHeadsup then
     drawHeadsup(model)
