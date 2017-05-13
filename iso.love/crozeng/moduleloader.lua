@@ -8,11 +8,11 @@ end
 local M = {
   state = newState(),
   opts={
-    debug=true
+    debug=false
   }
 }
 
-local function debug(...)
+local function log(...)
   if not M.opts.debug then return end
   str = "crozeng.ModuleLoader:"
   local n = select('#', ...)
@@ -50,7 +50,7 @@ end
 local original_require = require
 
 require = function(name)
-  debug("require: "..name) -- XXX
+  log("require: "..name) -- XXX
   push_require_dep(M,name)
   loaded = original_require(name)
   pop_require_dep(M)
@@ -85,14 +85,14 @@ local function print_deps_debug(deps,ind)
   if deps then
     ind = ind or ""
     for name,node in pairs(deps) do
-      debug(ind..name)
+      log(ind..name)
       print_deps_debug(node.deps,ind.."  ")
     end
   end
 end
 
 M.debug_deps = function()
-  debug("debug_deps:")
+  log("debug_deps:")
   print_deps_debug(M.state.deps)
 end
 
