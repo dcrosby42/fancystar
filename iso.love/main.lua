@@ -40,16 +40,21 @@ function generateCheckerboard(xsize,ysize, startx, starty, z, acolor, bcolor)
   return boxes
 end
 
+function makeSomeBoxes()
+  local boxes = {
+    newBox({1,0,0},Unit,Colors.Red),
+    newBox({1,1,0},Unit,Colors.Blue),
+    newBox({0,0,0},Unit,Colors.White),
+    newBox({0,1,0},Unit,Colors.Green),
+    newBox({1,1,1},Unit,Colors.Purple),
+    -- newBox({-0.5,-0.5,0},{1,1,1},Colors.Yellow),
+  }
+  return boxes
+end
+
 local model = {}
 function love.load()
-  -- model.boxes = {
-  --   newBox({1,0,0},Unit,Colors.Red),
-  --   newBox({1,1,0},Unit,Colors.Blue),
-  --   newBox({0,0,0},Unit,Colors.White),
-  --   newBox({0,1,0},Unit,Colors.Green),
-  --   newBox({1,1,1},Unit,Colors.Purple),
-  --   -- newBox({-0.5,-0.5,0},{1,1,1},Colors.Yellow),
-  -- }
+  -- model.boxes = makeSomeBoxes()
   model.boxes = generateCheckerboard(10,10,-5,-5,0, Colors.White, Colors.Blue)
 
   table.sort(model.boxes, Iso.sort)
@@ -67,6 +72,7 @@ function love.load()
       drawWireframes = false,
       drawWireframesOpaque = false,
     },
+    cursor = newBox({0,0,0},Unit,Colors.White),
   }
 
   local img = model.images[blender_cube]
@@ -94,7 +100,11 @@ function love.draw()
   if model.dbg.flags.drawWireframesOpaque then
     DebugDraw.drawWireframesOpaque(model.boxes)
   end
+
+  DebugDraw.drawWireframesOpaque({model.dbg.cursor})
+
   love.graphics.pop()
+
 
   if model.dbg.flags.drawHeadsup then
     drawHeadsup(model)
@@ -110,6 +120,13 @@ function love.keypressed(key, _scancode, _isrepeat)
   if key == "1" then toggleFlag(model.dbg.flags, 'drawSolids') end
   if key == "2" then toggleFlag(model.dbg.flags, 'drawWireframes') end
   if key == "3" then toggleFlag(model.dbg.flags, 'drawWireframesOpaque') end
+
+  if key == "w" then model.dbg.cursor.pos[1] = model.dbg.cursor.pos[1] + 1 end
+  if key == "a" then model.dbg.cursor.pos[2] = model.dbg.cursor.pos[2] - 1 end
+  if key == "s" then model.dbg.cursor.pos[1] = model.dbg.cursor.pos[1] - 1 end
+  if key == "d" then model.dbg.cursor.pos[2] = model.dbg.cursor.pos[2] + 1 end
+  if key == "z" then model.dbg.cursor.pos[3] = model.dbg.cursor.pos[3] - 1 end
+  if key == "x" then model.dbg.cursor.pos[3] = model.dbg.cursor.pos[3] + 1 end
 end
 
 function love.keyreleased(key, _scancode, _isrepeat)
@@ -145,6 +162,8 @@ function drawHeadsup(model)
 
 
   love.graphics.setColor(0,0,0)
-  love.graphics.print("Screen("..model.dbg.screen.offx..","..model.dbg.screen.offy..")",0,0)
+  love.graphics.print("Screen: "..model.dbg.screen.offx..","..model.dbg.screen.offy,0,0)
+  local cp = model.dbg.cursor.pos
+  love.graphics.print("Cursor: "..cp[1]..","..cp[2]..","..cp[3],0,10)
   love.graphics.pop()
 end

@@ -41,7 +41,7 @@ local function drawWireframeBoxOpaque(box)
   )
   love.graphics.line(
     rp2[1],rp2[2],
-    rp4[1],rp4[2]
+    rp6[1],rp6[2]
   )
 end
 local function drawWireframeBox(box)
