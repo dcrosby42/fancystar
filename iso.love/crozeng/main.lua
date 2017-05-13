@@ -164,4 +164,8 @@ function love.joystickreleased( joystick, button )
   updateWorld(toJoystickAction("button", button,0))
 end
 
+function love.resize(w,h)
+  updateWorld({type='resize',w=w, h=h})
+end
+
 return Hooks

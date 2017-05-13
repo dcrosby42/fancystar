@@ -20,6 +20,7 @@ end
 
 local concrete003 = "images/concrete003.png"
 local blender_cube = "images/blender_cube.png"
+local maya = "images/maya.png"
 -- local blender_cube = "images/blender_cube_copy.png"
 
 local Unit = {1,1,1}
@@ -61,6 +62,7 @@ function initModel()
   model.images = {}
   model.images[concrete003] = love.graphics.newImage(concrete003)
   model.images[blender_cube] = love.graphics.newImage(blender_cube)
+  model.images[maya] = love.graphics.newImage(maya)
 
   model.dbg = {
     screen={offx=400, offy=400},
@@ -72,6 +74,7 @@ function initModel()
       drawWireframesOpaque = false,
     },
     cursor = newBox({0,0,0},Unit,Colors.White),
+    mapScale = 1,
   }
 
   local img = model.images[blender_cube]
@@ -90,6 +93,7 @@ function handleKeyPressed(model,key)
   if key == "1" then toggleFlag(model.dbg.flags, 'drawSolids') end
   if key == "2" then toggleFlag(model.dbg.flags, 'drawWireframes') end
   if key == "3" then toggleFlag(model.dbg.flags, 'drawWireframesOpaque') end
+  if key == "h" then toggleFlag(model.dbg.flags, 'drawHeadsup') end
 
   if key == "w" then model.dbg.cursor.pos[1] = model.dbg.cursor.pos[1] + 1 end
   if key == "a" then model.dbg.cursor.pos[2] = model.dbg.cursor.pos[2] - 1 end
@@ -97,6 +101,10 @@ function handleKeyPressed(model,key)
   if key == "d" then model.dbg.cursor.pos[2] = model.dbg.cursor.pos[2] + 1 end
   if key == "z" then model.dbg.cursor.pos[3] = model.dbg.cursor.pos[3] - 1 end
   if key == "x" then model.dbg.cursor.pos[3] = model.dbg.cursor.pos[3] + 1 end
+
+  if key == "-" then model.dbg.mapScale = model.dbg.mapScale - 0.5 end
+  if key == "=" then model.dbg.mapScale = model.dbg.mapScale + 0.5 end
+  if key == "0" then model.dbg.mapScale = 1 end
 
   if key == "r" then
     return {
@@ -124,6 +132,8 @@ function drawHeadsup(model)
   love.graphics.print("Screen: "..model.dbg.screen.offx..","..model.dbg.screen.offy,0,0)
   local cp = model.dbg.cursor.pos
   love.graphics.print("Cursor: "..cp[1]..","..cp[2]..","..cp[3],0,10)
+
+  love.graphics.setColor(255,255,255)
   love.graphics.pop()
 end
 
@@ -149,15 +159,32 @@ local function updateWorld(model,action)
     elseif action.state == 'released' then
       model.dbg.mouse.down = false
     end
+  elseif action.type == "resize" then
+    print("devui: screen resize "..tflatten(action))
   end
   return model, sidefx
+end
+
+local function drawMaya(model)
+  local img = model.images[maya]
+  -- print("maya "..img:getWidth().." "..img:getHeight())
+  love.graphics.draw(
+    img,
+    100,100,                               -- location
+    0,                                 -- rotation
+    1,1,                               -- size
+    0,0                                -- xoff,yoff
+  )
 end
 
 local function drawWorld(model)
   local dbg = model.dbg
 
+  drawMaya(model)
+
   love.graphics.push()
   love.graphics.translate(dbg.screen.offx, dbg.screen.offy)
+  love.graphics.scale(model.dbg.mapScale,model.dbg.mapScale)
 
   if model.dbg.flags.drawSolids then
     local img = model.images[blender_cube]
