@@ -2,6 +2,7 @@
 package.path = package.path .. ";./?/init.lua"
 
 require 'crozeng.helpers'
+local ModuleLoader = require 'crozeng.moduleloader'
 
 local DefaultConfig = {
   width = love.graphics.getWidth(),
@@ -13,26 +14,23 @@ local Config = DefaultConfig
 local Hooks = {}
 
 local RootModule
-
 local world
 
-local setup
-local runGame = function(rootModule, opts)
-  RootModule = rootModule
-  Config = tcopy(opts, DefaultConfig)
-  setup()
-end
-
-function love.load()
+function loadItUp()
   Config = tcopy(DefaultConfig)
-  if Hooks.module then
+  if Hooks.module_name then
+    RootModule = ModuleLoader.load(Hooks.module_name)
+    ModuleLoader.debug_deps()
+  elseif Hooks.module then
     RootModule = Hooks.module
-    if not RootModule.newWorld then error("Your module must define a .newWorld() function") end
-    if not RootModule.updateWorld then error("Your module must define an .updateWorld() function") end
-    if not RootModule.drawWorld then error("Your module must define a .drawWorld() function") end
-  else
-    error("Please specify Hooks.module")
   end
+  if not RootModule then
+    error("Please specify Hooks.module_name or Hooks.module")
+  end
+  if not RootModule.newWorld then error("Your module must define a .newWorld() function") end
+  if not RootModule.updateWorld then error("Your module must define an .updateWorld() function") end
+  if not RootModule.drawWorld then error("Your module must define a .drawWorld() function") end
+
   if Hooks.onload then
     Hooks.onload()
   end
@@ -42,10 +40,39 @@ function love.load()
   world = RootModule.newWorld(Hooks.moduleOpts)
 end
 
+local function reloadRootModule()
+  if Hooks.module_name then
+    local names = ModuleLoader.list_deps_of(Hooks.module_name)
+    for i=1,#names do
+      ModuleLoader.uncache_package(names[i])
+    end
+    ModuleLoader.uncache_package(Hooks.module_name)
+    loadItUp()
+  end
+end
+
+function love.load()
+  loadItUp()
+end
+
+local function updateWorld(action)
+  local newworld, sidefx = RootModule.updateWorld(world, action)
+  if newworld then
+    world = newworld
+  end
+  if sidefx then
+    for i=1,#sidefx do
+      if sidefx[i].type == 'crozeng.reloadRootModule' then
+        reloadRootModule()
+      end
+    end
+  end
+end
+
 local dtAction = {type="tick", dt=0}
 function love.update(dt)
   dtAction.dt = dt
-  RootModule.updateWorld(world, dtAction)
+  updateWorld(dtAction)
 end
 
 function love.draw()
@@ -65,10 +92,10 @@ function toKeyboardAction(state,key)
   return keyboardAction
 end
 function love.keypressed(key, _scancode, _isrepeat)
-  RootModule.updateWorld(world, toKeyboardAction("pressed",key))
+  updateWorld(toKeyboardAction("pressed",key))
 end
 function love.keyreleased(key, _scancode, _isrepeat)
-  RootModule.updateWorld(world, toKeyboardAction("released",key))
+  updateWorld(toKeyboardAction("released",key))
 end
 
 local mouseAction = {type="mouse", state=nil, x=0, y=0, dx=0,dy=0,button=0, isTouch=0}
@@ -84,15 +111,15 @@ function toMouseAction(s,x,y,b,it,dx,dy)
 end
 
 function love.mousepressed(x,y, button, isTouch, dx, dy)
-  RootModule.updateWorld(world, toMouseAction("pressed",x,y,button,isTouch))
+  updateWorld(toMouseAction("pressed",x,y,button,isTouch))
 end
 
 function love.mousereleased(x,y, button, isTouch)
-  RootModule.updateWorld(world, toMouseAction("released",x,y,button,isTouch))
+  updateWorld(toMouseAction("released",x,y,button,isTouch))
 end
 
 function love.mousemoved(x,y, dx,dy, isTouch)
-  RootModule.updateWorld(world, toMouseAction("moved",x,y,nil,isTouch,dx,dy))
+  updateWorld(toMouseAction("moved",x,y,nil,isTouch,dx,dy))
 end
 
 local touchAction = {type="touch", state=nil, id='', x=0, y=0, dx=0, dy=0}
@@ -107,13 +134,13 @@ function toTouchAction(s,id,x,y,dx,dy)
 end
 
 function love.touchpressed(id, x,y, dx,dy, pressure)
-  RootModule.updateWorld(world, toTouchAction("pressed",id,x,y,dx,dy))
+  updateWorld(toTouchAction("pressed",id,x,y,dx,dy))
 end
 function love.touchmoved(id, x,y, dx,dy, pressure)
-  RootModule.updateWorld(world, toTouchAction("moved",id,x,y,dx,dy))
+  updateWorld(toTouchAction("moved",id,x,y,dx,dy))
 end
 function love.touchreleased(id, x,y, dx,dy, pressure)
-  RootModule.updateWorld(world, toTouchAction("released",id,x,y,dx,dy))
+  updateWorld(toTouchAction("released",id,x,y,dx,dy))
 end
 
 local joystickAction = {type="joystick", id='TODO', controlType='', control='', value=0}
@@ -126,15 +153,15 @@ function toJoystickAction(controlType, control, value)
 end
 
 function love.joystickaxis( joystick, axis, value )
-  RootModule.updateWorld(world, toJoystickAction("axis", axis, value))
+  updateWorld(toJoystickAction("axis", axis, value))
 end
 
 function love.joystickpressed( joystick, button )
-  RootModule.updateWorld(world, toJoystickAction("button",button,1))
+  updateWorld(toJoystickAction("button",button,1))
 end
 
 function love.joystickreleased( joystick, button )
-  RootModule.updateWorld(world, toJoystickAction("button", button,0))
+  updateWorld(toJoystickAction("button", button,0))
 end
 
 return Hooks

@@ -101,6 +101,7 @@ function tindexOf(t,v)
 end
 
 function tconcat(t1,t2)
+  if not t2 then return t1 end
   for i=1,#t2 do
     t1[#t1+1] = t2[i]
   end

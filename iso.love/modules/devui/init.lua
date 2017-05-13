@@ -97,6 +97,13 @@ function handleKeyPressed(model,key)
   if key == "d" then model.dbg.cursor.pos[2] = model.dbg.cursor.pos[2] + 1 end
   if key == "z" then model.dbg.cursor.pos[3] = model.dbg.cursor.pos[3] - 1 end
   if key == "x" then model.dbg.cursor.pos[3] = model.dbg.cursor.pos[3] + 1 end
+
+  if key == "r" then
+    return {
+      {type="crozeng.reloadRootModule"}
+    }
+  end
+  return {}
 end
 
 
@@ -125,9 +132,10 @@ local function newWorld(opts)
 end
 
 local function updateWorld(model,action)
+  local sidefx = {}
   if action.type == 'keyboard' then
     if action.state == 'pressed' then
-      handleKeyPressed(model, action.key)
+      tconcat(sidefx, handleKeyPressed(model, action.key))
     end
 
   elseif action.type == 'mouse' then
@@ -142,6 +150,7 @@ local function updateWorld(model,action)
       model.dbg.mouse.down = false
     end
   end
+  return model, sidefx
 end
 
 local function drawWorld(model)
