@@ -5,7 +5,7 @@ local Iso = require 'iso'
 local transCopy = Iso.transCopy
 local proj = Iso.proj
 
-local function drawWireframeBoxOpaque(box)
+D.drawWireframeBoxOpaque = function(box)
   local p1 = transCopy(box.pos, {0,0,0})
   local p2 = transCopy(p1, {0, box.dim[2], 0})
   local p3 = transCopy(p2, {box.dim[1], 0, 0})
@@ -94,19 +94,34 @@ local function drawWireframeBox(box)
   )
 end
 
+D.drawBoxTile = function(box,img)
+  local blockPt = box.pos
+  local screenPt = proj(blockPt)
+
+  love.graphics.setColor(unpack(box.color))
+  love.graphics.draw(
+    img,
+    screenPt[1], screenPt[2],          -- location
+    0,                                 -- rotation
+    1,1,                               -- size
+    0,img:getHeight()-Iso.TILE_HEIGHT_HALF -- x,y offsets
+  )
+end
+
 D.drawSolids = function(boxes,img)
   for i=1,#boxes do
-    local blockPt = boxes[i].pos
-    local screenPt = proj(blockPt)
-
-    love.graphics.setColor(unpack(boxes[i].color))
-    love.graphics.draw(
-      img,
-      screenPt[1], screenPt[2],          -- location
-      0,                                 -- rotation
-      1,1,                               -- size
-      0,img:getHeight()-Iso.TILE_HEIGHT_HALF -- x,y offsets
-    )
+    D.drawBoxTile(boxes[i],img)
+    -- local blockPt = boxes[i].pos
+    -- local screenPt = proj(blockPt)
+    --
+    -- love.graphics.setColor(unpack(boxes[i].color))
+    -- love.graphics.draw(
+    --   img,
+    --   screenPt[1], screenPt[2],          -- location
+    --   0,                                 -- rotation
+    --   1,1,                               -- size
+    --   0,img:getHeight()-Iso.TILE_HEIGHT_HALF -- x,y offsets
+    -- )
   end
 end
 
@@ -120,7 +135,7 @@ end
 D.drawWireframesOpaque = function(boxes)
   for i=1,#boxes do
     local box = boxes[i]
-    drawWireframeBoxOpaque(box)
+    D.drawWireframeBoxOpaque(box)
   end
 end
 
