@@ -7,7 +7,7 @@ crozeng.onload = function()
     resizable=true,
     minwidth=400,
     minheight=300,
-    highdpi=true
+    highdpi=false
   })
   -- print("Pixelscale: "..love.window.getPixelScale())
 end

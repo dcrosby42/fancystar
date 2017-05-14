@@ -19,7 +19,9 @@ local function newBox(pos,dim,color)
 end
 
 local concrete003 = "images/concrete003.png"
-local blender_cube = "images/blender_cube.png"
+-- local blender_cube = "images/blender_cube.png"
+-- local blender_cube = "images/blender_cube2.png"
+local blender_cube = "images/blender_cube_96.png"
 local maya = "images/maya_trans.png"
 -- local blender_cube = "images/blender_cube_copy.png"
 
@@ -55,7 +57,8 @@ end
 function initModel()
   local model = {}
   -- model.boxes = makeSomeBoxes()
-  model.boxes = generateCheckerboard(10,10,-5,-5,0, Colors.White, Colors.Blue)
+  model.boxes = generateCheckerboard(10,10,-5,-5,0, Colors.Blue, Colors.White)
+  tconcat(model.boxes, generateCheckerboard(5,0, 0,5,1, Colors.White, Colors.Blue))
 
   table.sort(model.boxes, Iso.sort)
 
@@ -65,7 +68,7 @@ function initModel()
   model.images[maya] = love.graphics.newImage(maya)
 
   model.dbg = {
-    screen={offx=400, offy=400},
+    screen={offx=450, offy=400},
     mouse={},
     flags = {
       drawHeadsup = true,
@@ -171,7 +174,7 @@ local function drawMaya(model)
   -- print("maya "..img:getWidth().." "..img:getHeight())
   love.graphics.draw(
     img,
-    200,200,                               -- location
+    0,0,                               -- location
     0,                                 -- rotation
     1,1,                               -- size
     0,0                                -- xoff,yoff
@@ -201,9 +204,10 @@ local function drawWorld(model)
 
   DebugDraw.drawWireframesOpaque({model.dbg.cursor})
 
+  drawMaya(model)
+
   love.graphics.pop()
 
-  drawMaya(model)
 
   if model.dbg.flags.drawHeadsup then
     drawHeadsup(model)
