@@ -83,6 +83,14 @@ function deeptcopy(orig)
   return copy
 end
 
+function lcopy(src)
+  local c = {}
+  for i=1,#src do
+    c[i] = src[i]
+  end
+  return c
+end
+
 function tmerge(left,right)
   for k,v in pairs(right) do
     left[k] = v
