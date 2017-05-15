@@ -50,15 +50,57 @@ local function projOrthoTop(p)
 end
 
 
-local function isoSort(a,b)
+local function isoSortZ(a,b)
   -- First considers VIRTUAL Z (height), sort ascending.
   if a.pos[3] ~= b.pos[3] then
     return a.pos[3] < b.pos[3]
   else
     -- Within same Z level, sort ascending by SCREEN Y
-    sa=proj(a.pos)
-    sb=proj(b.pos)
+    local sa=proj(a.pos)
+    local sb=proj(b.pos)
     return sa[2] < sb[2]
+  end
+end
+
+local function isoSortZ2(a,b)
+  local apos = a.pos
+  local bpos = b.pos
+  if a.bounds then
+    apos = {apos[1],apos[2],apos[3]+a.bounds.dim[3]}
+  end
+  if b.bounds then
+    bpos = {bpos[1],bpos[2],bpos[3]+b.bounds.dim[3]}
+  end
+  -- First considers VIRTUAL Z (height), sort ascending.
+  if apos[3] ~= bpos[3] then
+    return apos[3] < bpos[3]
+  else
+    -- Within same Z level, sort ascending by SCREEN Y
+    local sa=proj(apos)
+    local sb=proj(bpos)
+    return sa[2] < sb[2]
+  end
+end
+
+local function isoSortY(a,b)
+  local sa=proj(a.pos)
+  local sb=proj(b.pos)
+  if sa[2] == sb[2] then
+    return a.pos[3] < b.pos[3]
+  else
+    return sa[2] < sb[2]
+  end
+end
+
+local one_over_sqrt_two = 1 / math.pow(2,0.5)
+local neg_cam_y = 1000
+local function isoSortD2(a,b)
+  local da = (a.pos[2] - a.pos[1] + neg_cam_y) * one_over_sqrt_two
+  local db = (b.pos[2] - b.pos[1] + neg_cam_y) * one_over_sqrt_two
+  if da ~= db then
+    return da < db
+  else
+    return a.pos[3] < b.pos[3]
   end
 end
 
@@ -66,7 +108,7 @@ local function transCopy(p, tr)
   return {p[1]+tr[1], p[2]+tr[2], p[3]+tr[3]}
 end
 
-Iso.sort = isoSort
+Iso.sort = isoSortZ
 Iso.proj = worldPointToScreenPoint
 Iso.transCopy = transCopy
 Iso.imgWidthToWorldWidth = imgWidthToWorldWidth
