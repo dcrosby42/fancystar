@@ -85,10 +85,22 @@ end
 -- NOTE: I reuse these template actions for "efficiency" however
 -- this means RootModule.updateWorld must NOT store references to them. :(
 -- TODO: just generate a new action structure each time to avoid potential errors.
-local keyboardAction = {type="keyboard", action=nil, key=nil}
-function toKeyboardAction(state,key)
+local keyboardAction = {type="keyboard", action='', key='', ctrl=false, lctrl=false, lctrl=false, shift=false, lshift=false, lshift=false,  gui=false, lgui=false, lgui=false}
+local function toKeyboardAction(state,key)
   keyboardAction.state=state
   keyboardAction.key=key
+  for _,mod in ipairs({"ctrl","shift","gui"}) do
+    keyboardAction[mod] = false
+    keyboardAction["l"..mod] = false
+    keyboardAction["r"..mod] = false
+    if love.keyboard.isDown("l"..mod) then
+      keyboardAction["l"..mod] = true
+      keyboardAction[mod] = true
+    elseif love.keyboard.isDown("r"..mod) then
+      keyboardAction["r"..mod] = true
+      keyboardAction[mod] = true
+    end
+  end
   return keyboardAction
 end
 function love.keypressed(key, _scancode, _isrepeat)
