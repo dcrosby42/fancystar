@@ -12,7 +12,7 @@ local function newWorld()
   local model ={
     blocks={
       newBlock({3,2,0},{2,2,2},Colors.Blue),
-      newBlock({2,4,0},{2,2,1},Colors.Green),
+      newBlock({2,4,0},{2.3,2,1},Colors.Green),
     },
     viewoff={x=400,y=300}
   }
@@ -78,7 +78,7 @@ local function drawBlock(block)
       isoProjPt(pos[1],pos[2],pos[3]),
       isoProjPt(pos[1],pos[2],pos[3]+size[3]),
       isoProjPt(pos[1]+size[1],pos[2],pos[3]+size[3]),
-      isoProjPt(pos[1]+size[2],pos[2],pos[3]),
+      isoProjPt(pos[1]+size[1],pos[2],pos[3]),
     },
     { --top
       isoProjPt(pos[1],pos[2],pos[3]+size[3]),
