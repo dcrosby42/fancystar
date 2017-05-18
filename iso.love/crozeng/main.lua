@@ -14,7 +14,19 @@ local Config = DefaultConfig
 local Hooks = {}
 
 local RootModule
-local world
+local world, errWorld
+
+function setErrorMode(err,traceback)
+  print("!! CAUGHT ERROR !!")
+  print(err)
+  print(traceback)
+  errWorld={
+    err=err, traceback=debug.traceback()
+  }
+end
+function clearErrorMode()
+  errWorld = nil
+end
 
 function loadItUp(opts)
   if not opts then opts={} end
@@ -42,6 +54,7 @@ function loadItUp(opts)
   end
 
   world = RootModule.newWorld(Hooks.moduleOpts)
+  clearErrorMode()
 end
 
 local function reloadRootModule()
@@ -56,16 +69,10 @@ local function reloadRootModule()
     ok,err = pcall(function() loadItUp({doOnload=false}) end)
     if ok then
       print("crozeng: Reloaded root module.")
-      if RootModule then
-        RootModule.updateWorld(world,{type="crozeng.reloadOk"})
-      end
+      clearErrorMode()
     else
       print("crozeng: RELOAD FAIL!")
-      print(err)
-      print(debug.traceback())
-      if RootModule then
-        RootModule.updateWorld(world,{type="crozeng.reloadError"})
-      end
+      setErrorMode(err,debug.traceback())
     end
   end
 end
@@ -75,16 +82,29 @@ function love.load()
 end
 
 local function updateWorld(action)
-  local newworld, sidefx = RootModule.updateWorld(world, action)
-  if newworld then
-    world = newworld
-  end
-  if sidefx then
-    for i=1,#sidefx do
-      if sidefx[i].type == 'crozeng.reloadRootModule' then
+  if errWorld then
+    if action.type == "keyboard" and action.state == "pressed" then
+      if action.key == 'r' then
         reloadRootModule()
       end
     end
+  end
+  if not RootModule then return end
+  local newworld, sidefx
+  ok,err = pcall(function() newworld,sidefx = RootModule.updateWorld(world, action) end)
+  if ok then
+    if newworld then
+      world = newworld
+    end
+    if sidefx then
+      for i=1,#sidefx do
+        if sidefx[i].type == 'crozeng.reloadRootModule' then
+          reloadRootModule()
+        end
+      end
+    end
+  else
+    setErrorMode(err,debug.traceback())
   end
 end
 
@@ -94,8 +114,21 @@ function love.update(dt)
   updateWorld(dtAction)
 end
 
+function drawErrorScreen(w)
+  love.graphics.setBackgroundColor(150,0,0)
+  love.graphics.setColor(255,255,255)
+  love.graphics.print("!! CAUGHT ERROR !!\n\nHIT 'R' TO RELOAD\n\n"..w.err.."\n\n"..w.traceback,0,0)
+end
+
 function love.draw()
-  RootModule.drawWorld(world)
+  if errWorld then
+    drawErrorScreen(errWorld)
+  else
+    ok,err = pcall(function() RootModule.drawWorld(world) end)
+    if not ok then
+      setErrorMode(err,debug.traceback())
+    end
+  end
 end
 
 --
