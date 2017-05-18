@@ -54,10 +54,18 @@ local function reloadRootModule()
 
 
     ok,err = pcall(function() loadItUp({doOnload=false}) end)
-    if not ok then
+    if ok then
+      print("crozeng: Reloaded root module.")
+      if RootModule then
+        RootModule.updateWorld(world,{type="crozeng.reloadOk"})
+      end
+    else
       print("crozeng: RELOAD FAIL!")
       print(err)
       print(debug.traceback())
+      if RootModule then
+        RootModule.updateWorld(world,{type="crozeng.reloadError"})
+      end
     end
   end
 end
