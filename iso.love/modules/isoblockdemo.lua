@@ -26,17 +26,17 @@ local function newWorld()
     newBlock({x=3,y=1,z=0},{x=1,y=4,z=1},   Colors.Blue, "blue"),
     newBlock({x=1,y=3,z=0},{x=2,y=2,z=2.5}, Colors.Green, "green"),
   }
-  printBlocks(blocks)
+  -- printBlocks(blocks)
 
   blocks = IsoBlock.sortBlocks(blocks)
-  printBlocks(blocks)
+  -- printBlocks(blocks)
   local model ={
     viewoff={x=400,y=300},
     blocks = blocks,
     blockIndex = lcopy(blocks),
     selectedBlock = 1,
   }
-  printBlocks(model.blockIndex)
+  -- printBlocks(model.blockIndex)
   return model
 
 end
@@ -80,11 +80,6 @@ local function updateWorld(model,action)
         model.selectedBlock = 0
       end
     end
-
-  elseif action.type == "crozeng.reloadError" then
-    model.reloadError = "DANG"
-  elseif action.type == "crozeng.reloadOk" then
-    model.reloadError = nil
   end
   return model, nil
 end
@@ -161,11 +156,7 @@ local function drawBlock(block)
 end
 
 local function drawWorld(model)
-  if model.reloadError then
-    love.graphics.print(model.reloadError)
-    return
-  end
-
+  love.graphics.setBackgroundColor(0,0,0)
   love.graphics.push()
   love.graphics.translate(model.viewoff.x,model.viewoff.y)
 
