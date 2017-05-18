@@ -1,4 +1,5 @@
 local Colors = require 'colors'
+local IsoBlock = require 'isoblock'
 local function newBlock(pos,size,color)
   return {
     type="block",
@@ -9,17 +10,31 @@ local function newBlock(pos,size,color)
 end
 
 local function newWorld()
+  -- local blocks={
+  --   newBlock({x=3,y=2,z=0},{x=2,y=2,z=2},Colors.Blue),
+  --   newBlock({x=2,y=4,z=0},{x=2.3,y=2,z=1},Colors.Green),
+  -- }
+  local blocks = {
+    newBlock({x=2,y=2,z=0},{x=1,y=1,z=1.5}, Colors.Red),
+    newBlock({x=3,y=1,z=0},{x=1,y=4,z=1},   Colors.Blue),
+    newBlock({x=1,y=3,z=0},{x=2,y=2,z=2.5}, Colors.Green),
+  }
+
+  blocks = IsoBlock.sortBlocks(blocks)
   local model ={
-    blocks={
-      newBlock({3,2,0},{2,2,2},Colors.Blue),
-      newBlock({2,4,0},{2.3,2,1},Colors.Green),
-    },
-    viewoff={x=400,y=300}
+    viewoff={x=400,y=300},
+    blocks = blocks,
   }
   return model
+
 end
 
 local function updateWorld(model,action)
+  if action.type == "crozeng.reloadError" then
+    model.reloadError = "DANG"
+  elseif action.type == "crozeng.reloadOk" then
+    model.reloadError = nil
+  end
   if action.type == "keyboard" and action.state == "pressed" then
     if action.key == 'r' then
       return model, {{type="crozeng.reloadRootModule"}}
@@ -69,22 +84,22 @@ local function drawBlock(block)
   local size = block.size
   local faces = {
     { -- left
-      isoProjPt(pos[1],pos[2],pos[3]),
-      isoProjPt(pos[1],pos[2]+size[2],pos[3]),
-      isoProjPt(pos[1],pos[2]+size[2],pos[3]+size[3]),
-      isoProjPt(pos[1],pos[2],pos[3]+size[3]),
+      isoProjPt(pos.x,pos.y,pos.z),
+      isoProjPt(pos.x,pos.y+size.y,pos.z),
+      isoProjPt(pos.x,pos.y+size.y,pos.z+size.z),
+      isoProjPt(pos.x,pos.y,pos.z+size.z),
     },
     { -- right
-      isoProjPt(pos[1],pos[2],pos[3]),
-      isoProjPt(pos[1],pos[2],pos[3]+size[3]),
-      isoProjPt(pos[1]+size[1],pos[2],pos[3]+size[3]),
-      isoProjPt(pos[1]+size[1],pos[2],pos[3]),
+      isoProjPt(pos.x,pos.y,pos.z),
+      isoProjPt(pos.x,pos.y,pos.z+size.z),
+      isoProjPt(pos.x+size.x,pos.y,pos.z+size.z),
+      isoProjPt(pos.x+size.x,pos.y,pos.z),
     },
     { --top
-      isoProjPt(pos[1],pos[2],pos[3]+size[3]),
-      isoProjPt(pos[1],pos[2]+size[2],pos[3]+size[3]),
-      isoProjPt(pos[1]+size[1],pos[2]+size[2],pos[3]+size[3]),
-      isoProjPt(pos[1]+size[1],pos[2],pos[3]+size[3]),
+      isoProjPt(pos.x,pos.y,pos.z+size.z),
+      isoProjPt(pos.x,pos.y+size.y,pos.z+size.z),
+      isoProjPt(pos.x+size.x,pos.y+size.y,pos.z+size.z),
+      isoProjPt(pos.x+size.x,pos.y,pos.z+size.z),
     }
   }
   local r,g,b,a = unpack(block.color)
@@ -100,6 +115,11 @@ local function drawBlock(block)
 end
 
 local function drawWorld(model)
+  if model.reloadError then
+    love.graphics.print(model.reloadError)
+    return
+  end
+
   love.graphics.push()
   love.graphics.translate(model.viewoff.x,model.viewoff.y)
 
@@ -112,7 +132,6 @@ local function drawWorld(model)
 
 
 
-  love.graphics.print("Hllo")
 end
 
 return {

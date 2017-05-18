@@ -1,3 +1,4 @@
+local Colors = require 'colors'
 local IsoBlock = {}
 
 local function newBlock(pos,size,color)
@@ -7,18 +8,41 @@ local function newBlock(pos,size,color)
     color=color,
   }
 end
+local function getBlockBounds(block)
+  local p = block.pos
+  local s = block.size
+  return {
+    xmin= p.x,
+    xmax= p.x + s.x,
+    ymin= p.y,
+    ymax= p.y + s.y,
+    zmin= p.z,
+    zmax= p.z + s.z,
+  }
+end
+
+local function removeBlockFromList(list,block)
+  local ridx = 0
+  for i=1,#list do
+    if list[i] == block then
+      ridx = i
+      break
+    end
+  end
+  if ridx > 0 then table.remove(list,ridx) end
+end
 
 IsoBlock.newBlock = newBlock
 
-local blocks = {
-  newBlock({x=1,y=3,z=0},{x=2,y=2,z=2.5}, Colors.Green),
-  newBlock({x=2,y=2,z=0},{x=1,y=1,z=1.5}, IsoBlock.colors.red),
-  newBlock({x=3,y=1,z=0},{x=1,y=4,z=1},   IsoBlock.colors.blue),
-}
+-- local blocks = {
+--   newBlock({x=1,y=3,z=0},{x=2,y=2,z=2.5}, Colors.Green),
+--   newBlock({x=2,y=2,z=0},{x=1,y=1,z=1.5}, Colors.red),
+--   newBlock({x=3,y=1,z=0},{x=1,y=4,z=1},   Colors.blue),
+-- }
 
 local function getBlockBounds(block)
-    local p = block.pos;
-    local s = block.size;
+    local p = block.pos
+    local s = block.size
     return {
       xmin= p.x,
       xmax= p.x + s.x,
@@ -50,8 +74,8 @@ local function spaceToIso(spacePos)
   return {
     x= x,
     y= y,
-    h= (x-y)*Math.sqrt(3)/2, ---- Math.cos(Math.PI/6)
-    v= (x+y)/2,              ---- Math.sin(Math.PI/6)
+    h= (x-y)*math.pow(3,0.5)*0.5, ---- Math.cos(Math.PI/6)
+    v= (x+y)*0.5,              ---- Math.sin(Math.PI/6)
   }
 end
 
@@ -85,14 +109,14 @@ end
 local function getIsoVerts(block)
   local verts = getIsoNamedSpaceVerts(block)
   return {
-    leftDown=  this.spaceToIso(verts.leftDown),
-    rightDown= this.spaceToIso(verts.rightDown),
-    backDown=  this.spaceToIso(verts.backDown),
-    frontDown= this.spaceToIso(verts.frontDown),
-    leftUp=    this.spaceToIso(verts.leftUp),
-    rightUp=   this.spaceToIso(verts.rightUp),
-    backUp=    this.spaceToIso(verts.backUp),
-    frontUp=   this.spaceToIso(verts.frontUp),
+    leftDown=  spaceToIso(verts.leftDown),
+    rightDown= spaceToIso(verts.rightDown),
+    backDown=  spaceToIso(verts.backDown),
+    frontDown= spaceToIso(verts.frontDown),
+    leftUp=    spaceToIso(verts.leftUp),
+    rightUp=   spaceToIso(verts.rightUp),
+    backUp=    spaceToIso(verts.backUp),
+    frontUp=   spaceToIso(verts.frontUp),
   }
 end
 
@@ -115,7 +139,7 @@ local function getIsoSepAxis(block_a, block_b)
   local a = getIsoBounds(block_a)
   local b = getIsoBounds(block_b)
 
-  local sepAxis = null
+  local sepAxis = nil
   if areRangesDisjoint(a.xmin,a.xmax,b.xmin,b.xmax) then
     sepAxis = 'x'
   end
@@ -131,19 +155,19 @@ end
 -- -- Try to find an axis in 3D space that separates the two given blocks.
 -- -- This helps identify which block is in front of the other.
 local function getSpaceSepAxis(block_a, block_b)
-  local sepAxis = null;
+  local sepAxis = nil
 
-  local a = block_a.getBounds();
-  local b = block_b.getBounds();
+  local a = getBlockBounds(block_a)
+  local b = getBlockBounds(block_b)
 
   if (areRangesDisjoint(a.xmin,a.xmax,b.xmin,b.xmax)) then
-    sepAxis = 'x';
+    sepAxis = 'x'
   elseif (areRangesDisjoint(a.ymin,a.ymax,b.ymin,b.ymax)) then
-    sepAxis = 'y';
+    sepAxis = 'y'
   elseif (areRangesDisjoint(a.zmin,a.zmax,b.zmin,b.zmax)) then
-    sepAxis = 'z';
+    sepAxis = 'z'
   end
-  return sepAxis;
+  return sepAxis
 end
 
 ---- In an isometric perspective of the two given blocks, determine
@@ -154,13 +178,13 @@ local function getFrontBlock(block_a, block_b)
   ---- then the two blocks do not overlap on the screen.
   ---- This means there is no "front" block to identify.
   if getIsoSepAxis(block_a, block_b) then
-    return nil;
+    return nil
   end
 
   ---- Find a 3D separation axis, and use it to determine
   ---- which block is in front of the other.
-  local a = block_a.getBounds()
-  local b = block_b.getBounds()
+  local a = getBlockBounds(block_a)
+  local b = getBlockBounds(block_b)
   local val = getSpaceSepAxis(block_a, block_b)
   if val == 'x' then
     if a.xmin < b.xmin then return block_a else return block_b end
@@ -188,7 +212,7 @@ local function sortBlocks(blocks)
   local a,b,frontBlock
   for i=1,numBlocks do
     a = blocks[i]
-    for j=i+1,j<numBlocks do
+    for j=i+1,numBlocks do
       b = blocks[j]
       frontBlock = getFrontBlock(a,b)
       if frontBlock then
@@ -225,11 +249,11 @@ local function sortBlocks(blocks)
     -- Tell blocks in front of the one we just drew
     -- that they can stop waiting on it.
     for j=1,#block.blocksInFront do
-      local frontBlock = block.blocksInFront[j];
+      local frontBlock = block.blocksInFront[j]
 
       -- Add this front block to our "to draw" list if there's
       -- nothing else behind it waiting to be drawn.
-      table.remove(frontBlock.blocksBehind, block)
+      removeBlockFromList(frontBlock.blocksBehind, block)
       if #frontBlock.blocksBehind == 0 then
         table.insert(blocksToDraw, frontBlock)
       end
@@ -240,3 +264,5 @@ local function sortBlocks(blocks)
 end
 
 IsoBlock.sortBlocks = sortBlocks
+
+return IsoBlock
