@@ -16,7 +16,8 @@ local Hooks = {}
 local RootModule
 local world
 
-function loadItUp()
+function loadItUp(opts)
+  if not opts then opts={} end
   Config = tcopy(DefaultConfig)
   if Hooks.module_name then
     RootModule = ModuleLoader.load(Hooks.module_name)
@@ -31,11 +32,14 @@ function loadItUp()
   if not RootModule.updateWorld then error("Your module must define an .updateWorld() function") end
   if not RootModule.drawWorld then error("Your module must define a .drawWorld() function") end
 
-  if Hooks.onload then
-    Hooks.onload()
+
+  if opts.doOnload ~= false then
+    if Hooks.onload then
+      Hooks.onload()
+    end
+    Config.width = love.graphics.getWidth()
+    Config.height = love.graphics.getHeight()
   end
-  Config.width = love.graphics.getWidth()
-  Config.height = love.graphics.getHeight()
 
   world = RootModule.newWorld(Hooks.moduleOpts)
 end
@@ -47,7 +51,14 @@ local function reloadRootModule()
       ModuleLoader.uncache_package(names[i])
     end
     ModuleLoader.uncache_package(Hooks.module_name)
-    loadItUp()
+
+
+    ok,err = pcall(function() loadItUp({doOnload=false}) end)
+    if not ok then
+      print("crozeng: RELOAD FAIL!")
+      print(err)
+      print(debug.traceback())
+    end
   end
 end
 
