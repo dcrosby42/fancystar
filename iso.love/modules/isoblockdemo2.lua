@@ -371,7 +371,20 @@ local function drawWorld(model)
 
   love.graphics.pop()
 
-  love.graphics.print("selected: "..model.blockIndex[model.selectedBlock].name)
+  local tx = 0
+  local ty = 0
+  local block = model.blockIndex[model.selectedBlock]
+  love.graphics.print("Hit 'space' to cycle selected block: "..block.name, tx,ty)
+  ty = ty + 15
+  love.graphics.print("Hit 't' to toggle topo-sort: "..tostring(model.doSort), tx,ty)
+  ty = ty + 15
+  love.graphics.print("Hit 'r' to reload app", tx,ty)
+  ty = ty + 15
+  love.graphics.print("Use [wasdzx] to move block: "..block.pos.x..","..block.pos.y..","..block.pos.z, tx,ty)
+  ty = ty + 15
+  love.graphics.print("Use CTRL-[wasdzx] to resize block: "..block.size.x..","..block.size.y..","..block.size.z, tx,ty)
+  ty = ty + 15
+
 
 
 
