@@ -1,6 +1,8 @@
 local Colors = require 'colors'
 local IsoBlock = {}
 
+local MAGIC_Z_NUMBER = 0.88388
+
 local function newBlock(pos,size,color)
   return {
     pos=pos,
@@ -34,25 +36,6 @@ end
 
 IsoBlock.newBlock = newBlock
 
--- local blocks = {
---   newBlock({x=1,y=3,z=0},{x=2,y=2,z=2.5}, Colors.Green),
---   newBlock({x=2,y=2,z=0},{x=1,y=1,z=1.5}, Colors.red),
---   newBlock({x=3,y=1,z=0},{x=1,y=4,z=1},   Colors.blue),
--- }
-
-local function getBlockBounds(block)
-    local p = block.pos
-    local s = block.size
-    return {
-      xmin= p.x,
-      xmax= p.x + s.x,
-      ymin= p.y,
-      ymax= p.y + s.y,
-      zmin= p.z,
-      zmax= p.z + s.z,
-    }
-end
-
 local function areRangesDisjoint(amin,amax,bmin,bmax)
   return (amax <= bmin or bmax <= amin)
 end
@@ -61,6 +44,28 @@ end
 -- -- x and y coordinates are oblique axes separated by 120 degrees.
 -- -- h,v are the horizontal and vertical distances from the origin.
 local function spaceToIso(spacePos)
+  local z
+  if not spacePos.z then
+    z = 0
+  else
+    z = spacePos.z
+  end
+
+  local x = spacePos.x + z
+  local y = spacePos.y + z
+
+  return {
+    x= x,
+    y= y,
+    h= (x-y)*math.pow(3,0.5)*0.5, ---- Math.cos(Math.PI/6)
+    v= (x+y)*0.5,              ---- Math.sin(Math.PI/6)
+  }
+end
+local S = 1 -- FIXME TODO
+local MAGIC_Z_NUMBER = 0.88388
+local TILE_SIDE_3DP = math.pow(math.pow(S,2) / 2, 0.5) -- how long in pixels, pre-projection, the tile side would be to create a hypotenuse of TILE_WIDTH
+local TILE_Z = TILE_SIDE_3DP * MAGIC_Z_NUMBER
+local function _spaceToIso(spacePos)
   local z
   if not spacePos.z then
     z = 0
@@ -197,8 +202,30 @@ local function getFrontBlock(block_a, block_b)
   end
 end
 
+local function printBlocks(blocks)
+  print("Blocks:")
+  for i=1,#blocks do
+    print("  "..i..": "..blocks[i].name)
+    if blocks[i].blocksBehind then
+      print("    blocksBehind:")
+      for j=1,#blocks[i].blocksBehind do
+        print("      "..j..": "..blocks[i].blocksBehind[j].name)
+      end
+    end
+    if blocks[i].blocksInFront then
+      print("    blocksInFront:")
+      for j=1,#blocks[i].blocksInFront do
+        print("      "..j..": "..blocks[i].blocksInFront[j].name)
+      end
+    end
+  end
+end
+
 ---- Sort blocks in the order that they should be drawn
 local function sortBlocks(blocks)
+  print("sortBlocks BEGIN")
+  printBlocks(blocks)
+
   local i, j, numBlocks
   numBlocks = #blocks
 
@@ -259,6 +286,8 @@ local function sortBlocks(blocks)
       end
     end
   end
+  print("sortBlocks END; blocksDrawn:")
+  printBlocks(blocksDrawn)
 
   return blocksDrawn
 end

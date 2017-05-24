@@ -17,6 +17,9 @@ local TILE_HEIGHT_HALF = TILE_HEIGHT / 2
 local TILE_SIDE_3DP = math.pow(math.pow(TILE_WIDTH,2) / 2, 0.5) -- how long in pixels, pre-projection, the tile side would be to create a hypotenuse of TILE_WIDTH
 local TILE_Z = TILE_SIDE_3DP * MAGIC_Z_NUMBER
 local PER_TILE_Z = 1 / TILE_Z
+-- print("TILE_SIDE_3DP "..TILE_SIDE_3DP)
+-- print("TILE_Z "..TILE_Z)
+-- print("PER_TILE_Z "..PER_TILE_Z)
 
 Iso.TILE_WIDTH = TILE_WIDTH
 Iso.PER_TILE_WIDTH = PER_TILE_WIDTH

@@ -1,5 +1,6 @@
 local Colors = require 'colors'
 local IsoBlock = require 'isoblock'
+require 'wtf'
 local function newBlock(pos,size,color,name)
   return {
     type="block",
@@ -8,12 +9,6 @@ local function newBlock(pos,size,color,name)
     color=color,
     name=name
   }
-end
-local function printBlocks(blocks)
-  print("Blocks:")
-  for i=1,#blocks do
-    print("  "..i..": "..blocks[i].name)
-  end
 end
 
 local function newWorld()
@@ -25,11 +20,12 @@ local function newWorld()
     newBlock({x=2,y=2,z=0},{x=1,y=1,z=1.5}, Colors.Red, "red"),
     newBlock({x=3,y=1,z=0},{x=1,y=4,z=1},   Colors.Blue, "blue"),
     newBlock({x=1,y=3,z=0},{x=2,y=2,z=2.5}, Colors.Green, "green"),
+    newBlock({x=5,y=0,z=0},{x=1,y=1,z=1}, Colors.Yellow, "yellow"),
   }
   -- printBlocks(blocks)
 
   blocks = IsoBlock.sortBlocks(blocks)
-  -- printBlocks(blocks)
+  -- IsoBlock.printBlocks(blocks)
   local model ={
     viewoff={x=400,y=300},
     blocks = blocks,
@@ -62,6 +58,7 @@ local function wasd(dir,model,action)
   end
   print("wasd "..block.name.." "..block.pos.x..","..block.pos.y..","..block.pos.z)
   model.blocks = IsoBlock.sortBlocks(model.blocks)
+  -- printBlocks(model.blocks)
 end
 
 local function updateWorld(model,action)
@@ -77,7 +74,7 @@ local function updateWorld(model,action)
     elseif action.key == 'space' then
       model.selectedBlock = model.selectedBlock + 1
       if model.selectedBlock > #model.blockIndex then
-        model.selectedBlock = 0
+        model.selectedBlock = 1
       end
     end
   end
@@ -89,6 +86,7 @@ local S = 64
 local HS = 32
 local QS = 16
 local MAGIC_Z_NUMBER = 0.88388
+-- local MAGIC_Z_NUMBER = 0.7
 -- local TILE_WIDTH = 96
 -- local PER_TILE_WIDTH = 1 / 96
 -- local TILE_WIDTH_HALF = TILE_WIDTH / 2
@@ -113,8 +111,8 @@ end
 
 local function drawFloorGrid()
   local z = 0
-  for x=-5,5 do
-    for y = -5,5 do
+  for x=0,5 do
+    for y = 0,5 do
       drawTileOutline(x,y,z)
     end
   end
