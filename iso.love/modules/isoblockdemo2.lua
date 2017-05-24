@@ -226,6 +226,35 @@ local function blocksOverlap(a,b)
   )
 end
 
+local function getSpaceSepAxis(a,b)
+  if areRangesDisjoint(a.pos.x, a.pos.x+a.size.x, b.pos.x, b.pos.x+b.size.x) then
+    return 'x'
+  elseif areRangesDisjoint(a.pos.y, a.pos.y+a.size.y, b.pos.y, b.pos.y+b.size.y) then
+    return 'y'
+  elseif areRangesDisjoint(a.pos.z, a.pos.z+a.size.z, b.pos.z, b.pos.z+b.size.z) then
+    return 'z'
+  end
+  return nil
+end
+
+local function getFrontBlock(a,b)
+  if not blocksOverlap(a,b) then return nil end
+
+  if areRangesDisjoint(a.pos.x, a.pos.x+a.size.x, b.pos.x, b.pos.x+b.size.x) then
+    -- space sep axis is X
+    if a.pos.x < b.pos.x then return a else return b end
+  elseif areRangesDisjoint(a.pos.y, a.pos.y+a.size.y, b.pos.y, b.pos.y+b.size.y) then
+    -- space sep axis is Y
+    if a.pos.y < b.pos.y then return a else return b end
+  elseif areRangesDisjoint(a.pos.z, a.pos.z+a.size.z, b.pos.z, b.pos.z+b.size.z) then
+    -- space sep axis is Z
+    if a.pos.z < b.pos.z then return b else return a end
+  end
+  -- print("BLOCKS INTERSECTING! "..a.name.." - "..b.name)
+  if a.pos.x < b.pos.x then return a else return b end
+  -- return nil
+end
+
 local function drawWorld(model)
   love.graphics.setBackgroundColor(0,0,0)
   love.graphics.push()
@@ -245,7 +274,12 @@ local function drawWorld(model)
     for j=i+1,#model.blocks do
       local b = model.blocks[j]
       if blocksOverlap(a,b) then
-        love.graphics.print(a.name.." overlaps "..b.name,0,pry)
+        local axis = getSpaceSepAxis(a,b)
+        if not axis then axis = "?" end
+        local frontBlock = getFrontBlock(a,b)
+        local fbname = "??"
+        if frontBlock then fbname=frontBlock.name end
+        love.graphics.print(a.name.." overlaps "..b.name.." sepAxis="..axis.." FRONT="..fbname,0,pry)
         pry = pry + 15
       end
     end
