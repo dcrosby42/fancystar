@@ -1,120 +1,278 @@
+require 'crozeng/helpers'
+
 local Iso = {}
 
--- local TILE_WIDTH = 64
--- local TILE_WIDTH_HALF = 32 -- TILE_WIDTH / 2
--- local TILE_HEIGHT = 32 -- TILE_WIDTH / 2
--- local TILE_HEIGHT_HALF = 16 -- TILE_HEIGHT / 2
--- local TILE_SIDE_3DP = 45.2548  -- sqrt(64^2 / 2) -- math.pow(math.pow(TILE_WIDTH,2) / 2, 0.5) -- derived from assuming TILE_WIDTH=64 = hypotenuse of flat tile
--- local MAGIC_Z_NUMBER = 0.88388   -- 40 / tile_side_for(tile_w=64) -- magic number derived from physical screen measure of 40 vertical pixels
--- local TILE_Z = 40                -- TILE_SIDE_3DP * MAGIC_Z_NUMBER
+local Colors = require 'colors'
 
-local MAGIC_Z_NUMBER = 0.88388
-local TILE_WIDTH = 96
-local PER_TILE_WIDTH = 1 / 96
-local TILE_WIDTH_HALF = TILE_WIDTH / 2
-local TILE_HEIGHT = TILE_WIDTH_HALF
-local TILE_HEIGHT_HALF = TILE_HEIGHT / 2
-local TILE_SIDE_3DP = math.pow(math.pow(TILE_WIDTH,2) / 2, 0.5) -- how long in pixels, pre-projection, the tile side would be to create a hypotenuse of TILE_WIDTH
-local TILE_Z = TILE_SIDE_3DP * MAGIC_Z_NUMBER
-local PER_TILE_Z = 1 / TILE_Z
--- print("TILE_SIDE_3DP "..TILE_SIDE_3DP)
--- print("TILE_Z "..TILE_Z)
--- print("PER_TILE_Z "..PER_TILE_Z)
-
-Iso.TILE_WIDTH = TILE_WIDTH
-Iso.PER_TILE_WIDTH = PER_TILE_WIDTH
-Iso.TILE_HEIGHT = TILE_HEIGHT
-Iso.TILE_WIDTH_HALF = TILE_WIDTH_HALF
-Iso.TILE_HEIGHT_HALF = TILE_HEIGHT_HALF
-Iso.TILE_SIDE_3DP = TILE_SIDE_3DP
+-- Dimetric projection parameters
+local TW = 96  -- on-screen tile width (from left diamond point to right)
+local HALF_TW = TW / 2  -- tile height is half the tile width
+local HALF_TH = TW / 4  -- half the tile height
+local MAGIC_Z_NUMBER = 0.88388 -- in game-style isometric projection, this is what you multiply by the "pixel size in 3d space" to squish Z into the right on-screen Y
+local WORLD_SIDE = math.pow(math.pow(TW,2) / 2, 0.5) -- how long in pixels, pre-projection, the tile side would be to create a hypotenuse of TILE_WIDTH.  45.254833995939 when TW=64
+local TILE_Z = WORLD_SIDE * MAGIC_Z_NUMBER -- screen y adjustment based on z.  40 when TW=64,  60 when TW=96
+local Z_FACTOR = 1.41421 * MAGIC_Z_NUMBER -- how to adjust virtual-tile y values based on z.   1.2499919348.  I guessed at this, it works, dunno why.  1.41421 == sqrt(2)
+Iso.TW = TW
+Iso.HALF_TW = HALF_TW
+Iso.HALF_TH = HALF_TH
 Iso.MAGIC_Z_NUMBER = MAGIC_Z_NUMBER
+Iso.WORLD_SIDE = WORLD_SIDE
 Iso.TILE_Z = TILE_Z
-Iso.PER_TILE_Z = PER_TILE_Z
+Iso.Z_FACTOR = Z_FACTOR
 
-local function worldPointToScreenPoint(p)
+-- 3d space coordinates to screen coords, returned as {x, y}
+local function spaceToScreen(x,y,z)
+  return { ((x-y) * HALF_TW), -(x+y) * HALF_TH - (z * TILE_Z) }
+end
+
+-- 3d space coordinates to screen coords, returned as x, y
+local function spaceToScreen_(x,y,z)
+  return ((x-y) * HALF_TW), -(x+y) * HALF_TH - (z * TILE_Z)
+end
+
+local function newBlock(pos,size,color,name)
   return {
-    (p[1] +  p[2]) * TILE_WIDTH_HALF,
-    ((p[2] - p[1]) * TILE_HEIGHT_HALF) - (p[3] * TILE_Z)
+    type="block",
+    pos=pos,
+    size=size,
+    color=color,
+    name=name,
+    sil={x={0,0},y={0,0},h={0,0}},
   }
 end
 
-local function imgWidthToWorldWidth(imgw)
-  return imgw * PER_TILE_WIDTH
+-- Draw the tile located at the given space coordinates.
+-- The 0,0 point of the tile is the bottom pt on the drawn diamond.
+-- Tile size is based on the dimetric constants above.
+local function drawTileOutline(sx,sy,sz)
+  local x,y = spaceToScreen_(sx,sy,sz)
+  love.graphics.line(
+    x,         y,
+    x+HALF_TW, y-HALF_TH,
+    x,         y-HALF_TW,
+    x-HALF_TW, y-HALF_TH,
+    x,         y)
 end
 
-local function imgHeightToWorldHeight(imgh)
-  return imgh * PER_TILE_Z
-end
-
-local proj = worldPointToScreenPoint
-
-local function projOrthoTop(p)
-  return {p[1],p[2]}
-end
-
-
-local function isoSortZ(a,b)
-  -- First considers VIRTUAL Z (height), sort ascending.
-  if a.pos[3] ~= b.pos[3] then
-    return a.pos[3] < b.pos[3]
-  else
-    -- Within same Z level, sort ascending by SCREEN Y
-    local sa=proj(a.pos)
-    local sb=proj(b.pos)
-    return sa[2] < sb[2]
+-- Draw our virtual graph paper
+local function drawFloorGrid()
+  local z = 0
+  for x=0,5 do
+    for y = 0,5 do
+      drawTileOutline(x,y,z)
+    end
   end
 end
 
-local function isoSortZ2(a,b)
-  local apos = a.pos
-  local bpos = b.pos
-  if a.bounds then
-    apos = {apos[1],apos[2],apos[3]+a.bounds.dim[3]}
+-- Draw a block's three visible faces using translucent color
+-- and solid edges, based on block.color
+local function drawBlock(block)
+  local pos = block.pos
+  local size = block.size
+  local faces = {
+    { -- left
+      spaceToScreen(pos.x,pos.y,pos.z),
+      spaceToScreen(pos.x,pos.y+size.y,pos.z),
+      spaceToScreen(pos.x,pos.y+size.y,pos.z+size.z),
+      spaceToScreen(pos.x,pos.y,pos.z+size.z),
+    },
+    { -- right
+      spaceToScreen(pos.x,pos.y,pos.z),
+      spaceToScreen(pos.x,pos.y,pos.z+size.z),
+      spaceToScreen(pos.x+size.x,pos.y,pos.z+size.z),
+      spaceToScreen(pos.x+size.x,pos.y,pos.z),
+    },
+    { --top
+      spaceToScreen(pos.x,pos.y,pos.z+size.z),
+      spaceToScreen(pos.x,pos.y+size.y,pos.z+size.z),
+      spaceToScreen(pos.x+size.x,pos.y+size.y,pos.z+size.z),
+      spaceToScreen(pos.x+size.x,pos.y,pos.z+size.z),
+    }
+  }
+  local r,g,b,a = unpack(block.color)
+  love.graphics.setColor(r,g,b,200)
+  for i=1,#faces do
+    love.graphics.polygon("fill",faces[i][1][1],faces[i][1][2],faces[i][2][1],faces[i][2][2],faces[i][3][1],faces[i][3][2],faces[i][4][1],faces[i][4][2])
   end
-  if b.bounds then
-    bpos = {bpos[1],bpos[2],bpos[3]+b.bounds.dim[3]}
+  love.graphics.setColor(r,g,b,255)
+  for i=1,#faces do
+    love.graphics.polygon("line",faces[i][1][1],faces[i][1][2],faces[i][2][1],faces[i][2][2],faces[i][3][1],faces[i][3][2],faces[i][4][1],faces[i][4][2])
   end
-  -- First considers VIRTUAL Z (height), sort ascending.
-  if apos[3] ~= bpos[3] then
-    return apos[3] < bpos[3]
-  else
-    -- Within same Z level, sort ascending by SCREEN Y
-    local sa=proj(apos)
-    local sb=proj(bpos)
-    return sa[2] < sb[2]
-  end
+  love.graphics.setColor(unpack(Colors.White))
 end
 
-local function isoSortY(a,b)
-  local sa=proj(a.pos)
-  local sb=proj(b.pos)
-  if sa[2] == sb[2] then
-    return a.pos[3] < b.pos[3]
-  else
-    return sa[2] < sb[2]
+-- (Re)calculate a block's virtual silhouette and store in block.sil
+-- x, y and h are used to detect overlap.  v is just for fun.
+local function updateBlockSil(block)
+  block.sil.xmin = block.pos.x + (Z_FACTOR * block.pos.z)
+  block.sil.xmax = block.pos.x + block.size.x + (Z_FACTOR * (block.pos.z + block.size.z))
+
+  block.sil.ymin = block.pos.y + (Z_FACTOR * block.pos.z)
+  block.sil.ymax = block.pos.y + block.size.y + (Z_FACTOR * (block.pos.z + block.size.z))
+
+  block.sil.hmin = block.pos.x - block.pos.y - block.size.y
+  block.sil.hmax = block.pos.x - block.pos.y + block.size.x
+
+  block.sil.vmin = block.pos.x + block.pos.y + (2*Z_FACTOR * block.pos.z) -- why 2*Z_FACTOR ??
+  block.sil.vmax = block.pos.x + block.size.x + block.pos.y + block.size.y + (2*Z_FACTOR * (block.pos.z + block.size.z)) -- why 2*Z_FACTOR??
+end
+
+-- Draw the projected silhouette extents for a block, on the virtual y, x and h axes
+local function drawBlockSil(block)
+  love.graphics.setColor(unpack(block.color))
+  love.graphics.setPointSize(4)
+  love.graphics.setLineWidth(3)
+
+  love.graphics.line(block.sil.xmin * HALF_TW, -block.sil.xmin * HALF_TH,
+                     block.sil.xmax * HALF_TW, -block.sil.xmax * HALF_TH)
+
+  love.graphics.line(-block.sil.ymin * HALF_TW, -block.sil.ymin * HALF_TH,
+                     -block.sil.ymax * HALF_TW, -block.sil.ymax * HALF_TH)
+
+  love.graphics.line(block.sil.hmin * HALF_TW, 50,
+                     block.sil.hmax * HALF_TW, 50)
+
+  love.graphics.line(250, -block.sil.vmin * HALF_TH,
+                     250, -block.sil.vmax * HALF_TH)
+
+  love.graphics.setLineWidth(1)
+  love.graphics.setColor(255,255,255)
+end
+
+-- Returns true if the two linear ranges do NOT overlap
+local function areRangesDisjoint(amin,amax,bmin,bmax)
+  return (amax <= bmin or bmax <= amin)
+end
+
+-- Returns true if all three of its virtual silhouette ranges overlap: x, y and h
+local function blocksOverlap(a,b)
+  return not(
+       areRangesDisjoint(a.sil.hmin,a.sil.hmax, b.sil.hmin,b.sil.hmax)
+    or areRangesDisjoint(a.sil.xmin,a.sil.xmax, b.sil.xmin,b.sil.xmax)
+    or areRangesDisjoint(a.sil.ymin,a.sil.ymax, b.sil.ymin,b.sil.ymax)
+  )
+end
+
+-- Figure out the "axis of spatial separation" between two blocks.
+-- This is only really interesting if two blocks are virtually overlapping.
+-- Eg, if box a has 0 or more distance between box b along the x axis, return 'x'.
+--
+-- The tutorial used this as part of getFrontBlock but I folded this logic
+-- into that function directly... this is just here for illustration
+local function getSpaceSepAxis(a,b)
+  if areRangesDisjoint(a.pos.x, a.pos.x+a.size.x, b.pos.x, b.pos.x+b.size.x) then
+    return 'x'
+  elseif areRangesDisjoint(a.pos.y, a.pos.y+a.size.y, b.pos.y, b.pos.y+b.size.y) then
+    return 'y'
+  elseif areRangesDisjoint(a.pos.z, a.pos.z+a.size.z, b.pos.z, b.pos.z+b.size.z) then
+    return 'z'
   end
+  return nil
 end
 
-local one_over_sqrt_two = 1 / math.pow(2,0.5)
-local neg_cam_y = 1000
-local function isoSortD2(a,b)
-  local da = (a.pos[2] - a.pos[1] + neg_cam_y) * one_over_sqrt_two
-  local db = (b.pos[2] - b.pos[1] + neg_cam_y) * one_over_sqrt_two
-  if da ~= db then
-    return da < db
-  else
-    return a.pos[3] < b.pos[3]
+-- Figure out if block a is "in front" of block b or vice versa.
+-- If the blocks aren't virtually overlapping, nil is returned, indicating no front-back dependency.
+local function getFrontBlock(a,b)
+  if not blocksOverlap(a,b) then return nil end
+
+  if areRangesDisjoint(a.pos.x, a.pos.x+a.size.x, b.pos.x, b.pos.x+b.size.x) then
+    -- space sep axis is X
+    if a.pos.x < b.pos.x then return a else return b end
+  elseif areRangesDisjoint(a.pos.y, a.pos.y+a.size.y, b.pos.y, b.pos.y+b.size.y) then
+    -- space sep axis is Y
+    if a.pos.y < b.pos.y then return a else return b end
+  elseif areRangesDisjoint(a.pos.z, a.pos.z+a.size.z, b.pos.z, b.pos.z+b.size.z) then
+    -- space sep axis is Z
+    if a.pos.z < b.pos.z then return b else return a end
   end
+
+  -- Uh oh, a and b are intersecting volumes.
+  -- This is not strictly legit... getFrontBlock's contract is that a and b are
+  -- non-intersecting.  But instead of erring or pretending their's no
+  -- relationship at all, let's just take a guess and pretend it's the X axis.
+  if a.pos.x < b.pos.x then return a else return b end
 end
 
-local function transCopy(p, tr)
-  return {p[1]+tr[1], p[2]+tr[2], p[3]+tr[3]}
+-- Calculate front-back dependencies between any overlapping blocks,
+-- and treat this dependency graph as a topological sort to produce
+-- a proper drawing order for the given blocks such that frontmost blocks
+-- are drawn after any blocks they may be occluding.
+local function sortBlocks(blocks)
+  -- Initialize the list of blocks that each block is behind.
+  for i=1,#blocks do
+    updateBlockSil(blocks[i])
+    blocks[i].blocksBehind = {}
+    blocks[i].blocksInFront = {}
+  end
+
+  -- For each pair of blocks, determine which is in front and behind.
+  for i=1,#blocks do
+    local a = blocks[i]
+    for j=i+1,#blocks do
+      local b = blocks[j]
+      local frontBlock = getFrontBlock(a,b)
+      if frontBlock then
+        if a == frontBlock then
+          table.insert(a.blocksBehind, b)
+          table.insert(b.blocksInFront, a)
+        else
+          table.insert(b.blocksBehind, a)
+          table.insert(a.blocksInFront, b)
+        end
+      end
+    end
+  end
+
+
+  -- Get list of blocks we can safely draw right now.
+  -- These are the blocks with nothing behind them.
+  local stack = {}
+  for i=1,#blocks do
+    if #blocks[i].blocksBehind == 0 then
+      table.insert(stack, blocks[i])
+    end
+  end
+
+  -- While there are still blocks we can draw...
+  local sorted = {}
+  while #stack > 0 do
+    -- Draw block by removing one from "to draw" and adding
+    -- it to the end of our "drawn" list.
+    local block = stack[#stack]
+    stack[#stack] = nil
+    table.insert(sorted, block)
+
+    -- Tell blocks in front of the one we just drew
+    -- that they can stop waiting on it.
+    for j=1,#block.blocksInFront do
+      local frontBlock = block.blocksInFront[j]
+
+      -- Add this front block to our "to draw" list if there's
+      -- nothing else behind it waiting to be drawn.
+      removeObject(frontBlock.blocksBehind, block)
+      if #frontBlock.blocksBehind == 0 then
+        table.insert(stack, frontBlock)
+      end
+    end
+  end
+
+  return sorted
 end
 
-Iso.sort = isoSortZ
-Iso.proj = worldPointToScreenPoint
-Iso.transCopy = transCopy
-Iso.imgWidthToWorldWidth = imgWidthToWorldWidth
-Iso.imgHeightToWorldHeight = imgHeightToWorldHeight
+-- local function transCopy(p, tr)
+--   return {p[1]+tr[1], p[2]+tr[2], p[3]+tr[3]}
+-- end
+
+Iso.sortBlocks = sortBlocks
+
+Iso.newBlock = newBlock
+Iso.spaceToScreen = spaceToScreen
+Iso.spaceToScreen_ = spaceToScreen_
+Iso.blocksOverlap = blocksOverlap
+Iso.getSpaceSepAxis = getSpaceSepAxis
+Iso.getFrontBlock = getFrontBlock
+-- Iso.transCopy = transCopy
+-- Iso.imgWidthToWorldWidth = imgWidthToWorldWidth
+-- Iso.imgHeightToWorldHeight = imgHeightToWorldHeight
 
 return Iso
