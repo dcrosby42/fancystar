@@ -91,6 +91,21 @@ function lcopy(src)
   return c
 end
 
+function removeObject(list,obj)
+  local ridx = 0
+  for i=1,#list do
+    if list[i] == obj then
+      ridx = i
+      break
+    end
+  end
+  if ridx > 0 then
+    table.remove(list,ridx)
+    return ridx
+  end
+  return nil
+end
+
 function tmerge(left,right)
   for k,v in pairs(right) do
     left[k] = v

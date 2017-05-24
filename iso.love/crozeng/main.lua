@@ -21,7 +21,7 @@ function setErrorMode(err,traceback)
   print(err)
   print(traceback)
   errWorld={
-    err=err, traceback=debug.traceback()
+    err=err, traceback=traceback, -- debug.traceback()
   }
 end
 function clearErrorMode()
@@ -66,7 +66,7 @@ local function reloadRootModule()
     ModuleLoader.uncache_package(Hooks.module_name)
 
 
-    ok,err = pcall(function() loadItUp({doOnload=false}) end)
+    ok,err = xpcall(function() loadItUp({doOnload=false}) end, debug.traceback)
     if ok then
       print("crozeng: Reloaded root module.")
       clearErrorMode()
@@ -91,7 +91,7 @@ local function updateWorld(action)
   end
   if not RootModule then return end
   local newworld, sidefx
-  ok,err = pcall(function() newworld,sidefx = RootModule.updateWorld(world, action) end)
+  ok,err = xpcall(function() newworld,sidefx = RootModule.updateWorld(world, action) end, debug.traceback)
   if ok then
     if newworld then
       world = newworld
@@ -117,14 +117,14 @@ end
 function drawErrorScreen(w)
   love.graphics.setBackgroundColor(150,0,0)
   love.graphics.setColor(255,255,255)
-  love.graphics.print("!! CAUGHT ERROR !!\n\nHIT 'R' TO RELOAD\n\n"..w.err.."\n\n"..w.traceback,0,0)
+  love.graphics.print("!! CAUGHT ERROR !!\n\nHIT 'R' TO RELOAD\n\n"..w.err.."\n\n(inside crozeng)"..w.traceback,0,0)
 end
 
 function love.draw()
   if errWorld then
     drawErrorScreen(errWorld)
   else
-    ok,err = pcall(function() RootModule.drawWorld(world) end)
+    ok,err = xpcall(function() RootModule.drawWorld(world) end, debug.traceback)
     if not ok then
       setErrorMode(err,debug.traceback())
     end
