@@ -5,6 +5,7 @@ local spaceToScreen = Iso.spaceToScreen
 local spaceToScreen_ = Iso.spaceToScreen_
 local newBlock = Iso.newBlock
 local IsoDebug = require 'isodebug'
+local serialize = require 'serialize'
 
 local BlenderCube96 = "images/blender_cube_96.png"
 local Maya = "images/maya_trans.png"
@@ -79,8 +80,6 @@ local function genCheckerboard(x1,y1, x2,y2, z1,z2, c1,c2)
 end
 
 local function newWorld()
-
-
   local model ={
     images = {},
     viewoff={x=400,y=500},
