@@ -7,17 +7,13 @@ local newBlock = Iso.newBlock
 local IsoDebug = require 'isodebug'
 
 local BlenderCube96 = "images/blender_cube_96.png"
+local Maya = "images/maya_trans.png"
 
 
-local function newSprite(name,imgInfo,pos,size)
-  local sprite = newBlock(pos,size,Color.White,name)
-  sprite.type = "sprite"
-  sprite.image = imgInfo
-  return sprite
-end
-
-local function addCubeSprite(model)
-  local s = newBlock({x=0, y=0, z=0}, {x=1,y=1,z=1}, Colors.White, "cubeSprite")
+local function newCubeSprite(model,pos,color,name)
+  color = color or Colors.White
+  name = name or "cube"
+  local s = newBlock(pos, {x=1,y=1,z=1}, color, name)
   s.type = "sprite"
   local img = model.images[BlenderCube96]
   s.image = {
@@ -27,29 +23,98 @@ local function addCubeSprite(model)
     width = img:getWidth(),
     height = img:getHeight(),
   }
-  table.insert(model.blocks, s)
+  s.dbg = {}
+  return s
+end
+
+local function newMayaSprite(model,loc,color,name)
+  color = color or Colors.White
+  name = name or "Maya"
+  local img = model.images[Maya]
+  local ih = img:getHeight()
+  local iw = img:getWidth()
+  -- ih=106 iw=68
+  local size = {
+    x = Iso.imgWidthToWorldWidth(56), -- iw - 12
+    y = Iso.imgWidthToWorldWidth(56),
+    z = Iso.imgHeightToWorldHeight(96), -- ih - 10
+  }
+  local center = { x=0.5, y=0.5, z=0 }
+  local pos = {
+    x = loc.x - (size.x*center.x),
+    y = loc.y - (size.y*center.y),
+    z = loc.z - (size.z*center.z)
+  }
+
+  local s = newBlock(pos, size, color, name)
+
+  s.type = "sprite"
+  s.image = {
+    name = Maya,
+    width = iw,
+    height = ih,
+    offx = 38, -- iw / 2 + 4,
+    offy = 114, -- ih + 8,
+  }
+  s.dbg = { box=false, imgbounds=false }
+  return s
+end
+
+local function genCheckerboard(x1,y1, x2,y2, z1,z2, c1,c2)
+  c1 = c1 or Colors.White
+  c2 = c2 or c1
+  local items = {}
+  for z=z1,z2 do
+    for x=x1,x2 do
+      for y=y1,y2 do
+        print("GenCheckerboard "..x..","..y..","..z)
+        local color = c1
+        if (x + y +   z) % 2 == 0 then
+          color = c2
+        end
+        items[#items+1] = {pos={x=x,y=y,z=z},color=color}
+      end
+    end
+  end
+  return items
 end
 
 local function newWorld()
 
-  local blocks = {
-    newBlock({x=1,y=1,z=0},{x=1,y=2,z=0.3}, Colors.Blue, "Blue"),
-    newBlock({x=2,y=2,z=0},{x=1,y=2,z=1.25}, Colors.Red, "Red"),
-    newBlock({x=4,y=0,z=0},{x=1,y=1,z=1}, Colors.Yellow, "Yellow"),
-  }
 
   local model ={
-    viewoff={x=400,y=300},
-    blocks = blocks,
-    selectedBlock = 1,
-    doSort = true,
-    drawSpriteGeom=true,
     images = {},
+    viewoff={x=400,y=500},
+    selectedBlock = 1,
+
+    doSort = true,
+    drawFloor=true,
+    drawSprites=true,
+    drawSpriteGeom=false,
+    drawHelp=false,
+    drawOverlapInfo=false,
+    drawSil=false,
   }
-
   model.images[BlenderCube96] = love.graphics.newImage(BlenderCube96)
+  model.images[Maya] = love.graphics.newImage(Maya)
+  model.blocks = {}
+  -- table.insert(model.blocks, newBlock({x=1,y=1,z=0},{x=1,y=2,z=0.3}, Colors.Blue, "Blue"))
+  -- table.insert(model.blocks, newBlock({x=2,y=2,z=0},{x=1,y=2,z=1.25}, Colors.Red, "Red"))
+  -- table.insert(model.blocks, newBlock({x=4,y=0,z=0},{x=1,y=1,z=1}, Colors.Yellow, "Yellow"))
 
-  addCubeSprite(model)
+  -- table.insert(model.blocks, newCubeSprite(model, {x=0,y=0,z=0}, Colors.Blue))
+  -- table.insert(model.blocks, newCubeSprite(model, {x=1,y=0,z=0}, Colors.Red))
+  -- table.insert(model.blocks, newCubeSprite(model, {x=0,y=0,z=-1}, Colors.White))
+  table.insert(model.blocks, newMayaSprite(model, {x=1.5,y=3.5,z=0}))
+
+  local items = genCheckerboard(0,0,5,5, -1,-1, Colors.White,Colors.Green)
+  tconcat(items, genCheckerboard(0,5,5,5, 0,1, Colors.Blue,Colors.White))
+  tconcat(items, genCheckerboard(0,0,5,0, 0,0, Colors.White,Colors.Blue))
+  tconcat(items, genCheckerboard(0,0, 0,5, 2,2, Colors.Blue,Colors.White))
+  tconcat(items, genCheckerboard(0,0, 0,0, 1,1, Colors.Red))
+  for _,item in ipairs(items) do
+    table.insert(model.blocks, newCubeSprite(model, item.pos, item.color))
+  end
 
   model.blockIndex = lcopy(model.blocks)
 
@@ -112,8 +177,10 @@ local function updateWorld(model,action)
     elseif action.key == 't' then
       model.doSort = not model.doSort
 
-    elseif action.key == 'b' then
+    elseif action.key == 'g' then
       model.drawSpriteGeom = not model.drawSpriteGeom
+    elseif action.key == 'b' then
+      model.drawSprites = not model.drawSprites
 
     elseif action.key == 'r' then
       return model, {{type="crozeng.reloadRootModule"}}
@@ -135,15 +202,17 @@ local function drawSprite(model,block)
   local offx = block.image.offx
   local offy = block.image.offy
   love.graphics.setColor(r,g,b,a)
-  love.graphics.draw(
-    img,
-    x,y,
-    0,                                 -- rotation
-    1,1,                               -- scalex,scaley
-    offx, offy -- xoff,yoff
-  )
-  if model.drawSpriteGeom then
-    love.graphics.setColor(255,0,0)
+  if model.drawSprites then
+    love.graphics.draw(
+      img,
+      x,y,
+      0,                                 -- rotation
+      1,1,                               -- scalex,scaley
+      offx, offy -- xoff,yoff
+    )
+  end
+  if model.drawSpriteGeom or block.dbg.imgbounds then
+    -- love.graphics.setColor(255,0,0)
     love.graphics.points(x,y)
     love.graphics.rectangle("line",x-offx,y-offy,block.image.width,block.image.height)
   end
@@ -155,7 +224,9 @@ local function drawWorld(model)
   love.graphics.push()
   love.graphics.translate(model.viewoff.x,model.viewoff.y)
 
-  IsoDebug.drawFloorGrid()
+  if model.drawFloor then
+    IsoDebug.drawFloorGrid()
+  end
 
   local blocks = model.blocks
   if model.doSort then
@@ -165,47 +236,53 @@ local function drawWorld(model)
   for i=1,#blocks do
     if blocks[i].type == "sprite" then
       drawSprite(model, blocks[i])
-      if model.drawSpriteGeom then
+      if model.drawSpriteGeom or blocks[i].dbg.box then
         IsoDebug.drawBlock(blocks[i])
       end
     else
       IsoDebug.drawBlock(blocks[i])
     end
-    IsoDebug.drawBlockSil(blocks[i])
+    if model.drawSil then
+      IsoDebug.drawBlockSil(blocks[i])
+    end
   end
 
-  local pry = 75
-  for i=1,#blocks do
-    local a = blocks[i]
-    for j=i+1,#blocks do
-      local b = blocks[j]
-      if Iso.blocksOverlap(a,b) then
-        local axis = Iso.getSpaceSepAxis(a,b)
-        if not axis then axis = "?" end
-        local frontBlock = Iso.getFrontBlock(a,b)
-        local fbname = "??"
-        if frontBlock then fbname=frontBlock.name end
-        love.graphics.print(a.name.." overlaps "..b.name.." sepAxis="..axis.." FRONT="..fbname,0,pry)
-        pry = pry + 15
+  if model.drawOverlapInfo then
+    local pry = 75
+    for i=1,#blocks do
+      local a = blocks[i]
+      for j=i+1,#blocks do
+        local b = blocks[j]
+        if Iso.blocksOverlap(a,b) then
+          local axis = Iso.getSpaceSepAxis(a,b)
+          if not axis then axis = "?" end
+          local frontBlock = Iso.getFrontBlock(a,b)
+          local fbname = "??"
+          if frontBlock then fbname=frontBlock.name end
+          love.graphics.print(a.name.." overlaps "..b.name.." sepAxis="..axis.." FRONT="..fbname,0,pry)
+          pry = pry + 15
+        end
       end
     end
   end
 
   love.graphics.pop()
 
-  local tx = 0
-  local ty = 0
-  local block = model.blockIndex[model.selectedBlock]
-  love.graphics.print("Hit 'space' to cycle selected block: "..block.name, tx,ty)
-  ty = ty + 15
-  love.graphics.print("Hit 't' to toggle topo-sort: "..tostring(model.doSort), tx,ty)
-  ty = ty + 15
-  love.graphics.print("Hit 'r' to reload app", tx,ty)
-  ty = ty + 15
-  love.graphics.print("Use [wasdzx] to move block: "..block.pos.x..","..block.pos.y..","..block.pos.z, tx,ty)
-  ty = ty + 15
-  love.graphics.print("Use CTRL-[wasdzx] to resize block: "..block.size.x..","..block.size.y..","..block.size.z, tx,ty)
-  ty = ty + 15
+  if model.drawHelp then
+    local tx = 0
+    local ty = 0
+    local block = model.blockIndex[model.selectedBlock]
+    love.graphics.print("Hit 'space' to cycle selected block: "..block.name, tx,ty)
+    ty = ty + 15
+    love.graphics.print("Hit 't' to toggle topo-sort: "..tostring(model.doSort), tx,ty)
+    ty = ty + 15
+    love.graphics.print("Hit 'r' to reload app", tx,ty)
+    ty = ty + 15
+    love.graphics.print("Use [wasdzx] to move block: "..block.pos.x..","..block.pos.y..","..block.pos.z, tx,ty)
+    ty = ty + 15
+    love.graphics.print("Use CTRL-[wasdzx] to resize block: "..block.size.x..","..block.size.y..","..block.size.z, tx,ty)
+    ty = ty + 15
+  end
 
 
 

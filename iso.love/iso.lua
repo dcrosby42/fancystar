@@ -12,6 +12,9 @@ local MAGIC_Z_NUMBER = 0.88388 -- in game-style isometric projection, this is wh
 local WORLD_SIDE = math.pow(math.pow(TW,2) / 2, 0.5) -- how long in pixels, pre-projection, the tile side would be to create a hypotenuse of TILE_WIDTH.  45.254833995939 when TW=64
 local TILE_Z = WORLD_SIDE * MAGIC_Z_NUMBER -- screen y adjustment based on z.  40 when TW=64,  60 when TW=96
 local Z_FACTOR = 1.41421 * MAGIC_Z_NUMBER -- how to adjust virtual-tile y values based on z.   1.2499919348.  I guessed at this, it works, dunno why.  1.41421 == sqrt(2)
+local PER_TILE_WIDTH = 1 / TW
+local PER_TILE_Z = 1 / TILE_Z
+
 Iso.TW = TW
 Iso.HALF_TW = HALF_TW
 Iso.HALF_TH = HALF_TH
@@ -41,66 +44,6 @@ local function newBlock(pos,size,color,name)
   }
 end
 
--- Draw the tile located at the given space coordinates.
--- The 0,0 point of the tile is the bottom pt on the drawn diamond.
--- Tile size is based on the dimetric constants above.
-local function drawTileOutline(sx,sy,sz)
-  local x,y = spaceToScreen_(sx,sy,sz)
-  love.graphics.line(
-    x,         y,
-    x+HALF_TW, y-HALF_TH,
-    x,         y-HALF_TW,
-    x-HALF_TW, y-HALF_TH,
-    x,         y)
-end
-
--- Draw our virtual graph paper
-local function drawFloorGrid()
-  local z = 0
-  for x=0,5 do
-    for y = 0,5 do
-      drawTileOutline(x,y,z)
-    end
-  end
-end
-
--- Draw a block's three visible faces using translucent color
--- and solid edges, based on block.color
-local function drawBlock(block)
-  local pos = block.pos
-  local size = block.size
-  local faces = {
-    { -- left
-      spaceToScreen(pos.x,pos.y,pos.z),
-      spaceToScreen(pos.x,pos.y+size.y,pos.z),
-      spaceToScreen(pos.x,pos.y+size.y,pos.z+size.z),
-      spaceToScreen(pos.x,pos.y,pos.z+size.z),
-    },
-    { -- right
-      spaceToScreen(pos.x,pos.y,pos.z),
-      spaceToScreen(pos.x,pos.y,pos.z+size.z),
-      spaceToScreen(pos.x+size.x,pos.y,pos.z+size.z),
-      spaceToScreen(pos.x+size.x,pos.y,pos.z),
-    },
-    { --top
-      spaceToScreen(pos.x,pos.y,pos.z+size.z),
-      spaceToScreen(pos.x,pos.y+size.y,pos.z+size.z),
-      spaceToScreen(pos.x+size.x,pos.y+size.y,pos.z+size.z),
-      spaceToScreen(pos.x+size.x,pos.y,pos.z+size.z),
-    }
-  }
-  local r,g,b,a = unpack(block.color)
-  love.graphics.setColor(r,g,b,200)
-  for i=1,#faces do
-    love.graphics.polygon("fill",faces[i][1][1],faces[i][1][2],faces[i][2][1],faces[i][2][2],faces[i][3][1],faces[i][3][2],faces[i][4][1],faces[i][4][2])
-  end
-  love.graphics.setColor(r,g,b,255)
-  for i=1,#faces do
-    love.graphics.polygon("line",faces[i][1][1],faces[i][1][2],faces[i][2][1],faces[i][2][2],faces[i][3][1],faces[i][3][2],faces[i][4][1],faces[i][4][2])
-  end
-  love.graphics.setColor(unpack(Colors.White))
-end
-
 -- (Re)calculate a block's virtual silhouette and store in block.sil
 -- x, y and h are used to detect overlap.  v is just for fun.
 local function updateBlockSil(block)
@@ -115,28 +58,6 @@ local function updateBlockSil(block)
 
   block.sil.vmin = block.pos.x + block.pos.y + (2*Z_FACTOR * block.pos.z) -- why 2*Z_FACTOR ??
   block.sil.vmax = block.pos.x + block.size.x + block.pos.y + block.size.y + (2*Z_FACTOR * (block.pos.z + block.size.z)) -- why 2*Z_FACTOR??
-end
-
--- Draw the projected silhouette extents for a block, on the virtual y, x and h axes
-local function drawBlockSil(block)
-  love.graphics.setColor(unpack(block.color))
-  love.graphics.setPointSize(4)
-  love.graphics.setLineWidth(3)
-
-  love.graphics.line(block.sil.xmin * HALF_TW, -block.sil.xmin * HALF_TH,
-                     block.sil.xmax * HALF_TW, -block.sil.xmax * HALF_TH)
-
-  love.graphics.line(-block.sil.ymin * HALF_TW, -block.sil.ymin * HALF_TH,
-                     -block.sil.ymax * HALF_TW, -block.sil.ymax * HALF_TH)
-
-  love.graphics.line(block.sil.hmin * HALF_TW, 50,
-                     block.sil.hmax * HALF_TW, 50)
-
-  love.graphics.line(250, -block.sil.vmin * HALF_TH,
-                     250, -block.sil.vmax * HALF_TH)
-
-  love.graphics.setLineWidth(1)
-  love.graphics.setColor(255,255,255)
 end
 
 -- Returns true if the two linear ranges do NOT overlap
@@ -259,20 +180,27 @@ local function sortBlocks(blocks)
   return sorted
 end
 
--- local function transCopy(p, tr)
---   return {p[1]+tr[1], p[2]+tr[2], p[3]+tr[3]}
--- end
+local function transCopy(p, tr)
+  return {p[1]+tr[1], p[2]+tr[2], p[3]+tr[3]}
+end
+
+local function imgWidthToWorldWidth(imgw)
+  return imgw * PER_TILE_WIDTH
+end
+
+local function imgHeightToWorldHeight(imgh)
+  return imgh * PER_TILE_Z
+end
 
 Iso.sortBlocks = sortBlocks
-
 Iso.newBlock = newBlock
 Iso.spaceToScreen = spaceToScreen
 Iso.spaceToScreen_ = spaceToScreen_
 Iso.blocksOverlap = blocksOverlap
 Iso.getSpaceSepAxis = getSpaceSepAxis
 Iso.getFrontBlock = getFrontBlock
--- Iso.transCopy = transCopy
--- Iso.imgWidthToWorldWidth = imgWidthToWorldWidth
--- Iso.imgHeightToWorldHeight = imgHeightToWorldHeight
+Iso.transCopy = transCopy
+Iso.imgWidthToWorldWidth = imgWidthToWorldWidth
+Iso.imgHeightToWorldHeight = imgHeightToWorldHeight
 
 return Iso
