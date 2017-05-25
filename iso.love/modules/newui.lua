@@ -67,7 +67,6 @@ local function genCheckerboard(x1,y1, x2,y2, z1,z2, c1,c2)
   for z=z1,z2 do
     for x=x1,x2 do
       for y=y1,y2 do
-        print("GenCheckerboard "..x..","..y..","..z)
         local color = c1
         if (x + y +   z) % 2 == 0 then
           color = c2
