@@ -33,14 +33,18 @@ local function spaceToScreen_(x,y,z)
   return ((x-y) * HALF_TW), -(x+y) * HALF_TH - (z * TILE_Z)
 end
 
+local function defaultSil()
+  return {x={0,0},y={0,0},h={0,0}}
+end
+
 local function newBlock(pos,size,color,name)
   return {
     type="block",
+    name=name,
     pos=pos,
     size=size,
     color=color,
-    name=name,
-    sil={x={0,0},y={0,0},h={0,0}},
+    sil=defaultSil(),
   }
 end
 
@@ -192,12 +196,21 @@ local function imgHeightToWorldHeight(imgh)
   return imgh * PER_TILE_Z
 end
 
-local function worldOrigin()
+local function zeroPoint()
   return {x=0,y=0,z=0}
 end
 
-local function worldUnit()
+local function onePoint()
   return {x=1,y=1,z=1}
+end
+
+local function offsetPos(block)
+  if not block.offp then return Iso.zeroPoint() end
+  return {
+    x = -(block.size.x * block.offp.x),
+    y = -(block.size.y * block.offp.y),
+    z = -(block.size.z * block.offp.z),
+  }
 end
 
 Iso.sortBlocks = sortBlocks
@@ -210,7 +223,8 @@ Iso.getFrontBlock = getFrontBlock
 Iso.transCopy = transCopy
 Iso.imgWidthToWorldWidth = imgWidthToWorldWidth
 Iso.imgHeightToWorldHeight = imgHeightToWorldHeight
-Iso.worldOrigin = worldOrigin
-Iso.worldUnit = worldUnit
+Iso.zeroPoint = zeroPoint
+Iso.onePoint = onePoint
+Iso.offsetPos = offsetPos
 
 return Iso

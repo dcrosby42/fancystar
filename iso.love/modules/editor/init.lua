@@ -5,48 +5,93 @@ local Colors = require 'colors'
 local Maya = "images/maya_trans.png"
 local BlenderCube96 = "images/blender_cube_96.png"
 
-local function boundsToPos(bounds)
-  return {
-    x = -(bounds.size.x * bounds.offp.x),
-    y = -(bounds.size.y * bounds.offp.y),
-    z = -(bounds.size.z * bounds.offp.z),
-  }
-end
-
-local function addSprite(model)
-  local spriteDef = {
+local sprites = {
+  maya1= {
+    type="sprite",
+    id="maya1",
     name="Maya",
     image={name=Maya, offx=38, offy=114},
-    bounds={
-      offp={x=0.5, y=0.5, z=0},
-      size={x=0.75, y=0.75, z=1.6},
-    },
+    offp={x=0.5, y=0.5, z=0},
+    size={x=0.6, y=0.6, z=1.55},
     debug={color=Colors.White},
   }
+}
 
-  local pos = Iso.worldOrigin()
-  pos = Iso.transCopy(pos,boundsToPos(spriteDef.bounds))
-  local s = Iso.newBlock(pos, spriteDef.bounds.size, spriteDef.debug.color, spriteDef.name)
-  s.type = "sprite"
-  s.image = tcopy(spriteDef.image)
-  s.bounds = spriteDef.bounds
-  model.sprite = s
+local function updateDrawables(model)
+  local sawCids = {}
+  -- For each comp, either insert a new drawable or update an existing
+  for i=1,#model.comps do
+    local comp = model.comps[i]
+    local sprite = model.res.sprites[comp.spriteId]
+    local pos = Iso.transCopy(comp.pos, Iso.offsetPos(sprite))
+
+    local dr
+    for j=1,#model.drawables do
+      if model.drawables[j].cid == comp.cid then
+        dr = model.drawables[j]
+      end
+    end
+    if dr then
+      -- just update
+      dr.pos = pos
+    else
+      -- new drawable from sprite:
+      local dr = Iso.newBlock(pos, sprite.size, sprite.debug.color, sprite.name)
+      dr.type = "spriteBox"
+      dr.image = tcopy(sprite.image)
+      dr.offp = sprite.offp
+      dr.cid = comp.cid
+      table.insert(model.drawables, dr)
+    end
+
+    -- keep track of which cids are in existence
+    table.insert(sawCids, comp.cid)
+  end
+
+  -- For any drawables with a cid, but which cid is no longer in comps, drop them.
+  local keeps=model.drawables
+  -- local keeps={}
+  -- for i=1,#model.drawables do
+  --   if (not model.drawables[i].cid) or lfind(sawCids, function(id) return id  == model.drawables[i].cid end) then
+  --     table.insert(keeps,model.drawables[i])
+  --   end
+  -- end
+
+  -- topo-sort the drawable blocks:
+  model.drawables = Iso.sortBlocks(keeps)
 end
 
 local function newWorld()
   local model ={
-    view={x=400, y=400,scale=1,zoomInc=0.25},
-    mouse={down=false},
+    view={x=400, y=400,scale=1.5,zoomInc=0.25},
+    mouse={down=false,pan=false,move=false},
     flags={
       grid=true,
       drawSprites=true,
       drawSpriteGeom=true,
     },
+    res={sprites=sprites},
   }
   model.images = {}
   model.images[BlenderCube96] = love.graphics.newImage(BlenderCube96)
   model.images[Maya] = love.graphics.newImage(Maya)
-  addSprite(model)
+  -- addSprite(model)
+
+  local comp = {
+    cid="c1",
+    spriteId="maya1",
+    pos = {x=0.5,y=0.5,z=0}
+  }
+  local comp2 = {
+    cid="c2",
+    spriteId="maya1",
+    pos = {x=-0.3,y=0.3,z=0}
+  }
+  model.comps = {comp,comp2}
+  -- model.comps = {comp}
+  model.drawables = {}
+
+  updateDrawables(model)
   return model
 end
 
@@ -68,13 +113,26 @@ end
 local function handleMouse(model,action)
   if action.state == 'moved' then
     if model.mouse.down then
-      model.view.x = model.view.x + action.dx
-      model.view.y = model.view.y + action.dy
+      if model.mouse.pan then
+        model.view.x = model.view.x + action.dx
+        model.view.y = model.view.y + action.dy
+      elseif model.mouse.move then
+        model.comps[1].pos.x = model.comps[1].pos.x + Iso.imgWidthToWorldWidth(action.dx)
+        model.comps[1].pos.y = model.comps[1].pos.y - Iso.imgWidthToWorldWidth(action.dy)
+        updateDrawables(model)
+      end
     end
   elseif action.state == 'pressed' then
     model.mouse.down = true
+    if action.button == 1 then
+      model.mouse.move = true
+    else
+      model.mouse.pan = true
+    end
   elseif action.state == 'released' then
     model.mouse.down = false
+    model.mouse.move = false
+    model.mouse.pan = false
   end
 end
 
@@ -176,7 +234,7 @@ local function drawSpriteDebug(images,block)
   love.graphics.setColor(255,255,0,180)
 
   -- draw "real" position of sprite as a yellow dot:
-  local sloc = boundsToPos(block.bounds)
+  local sloc = Iso.offsetPos(block)
   local slx,sly = Iso.spaceToScreen_(block.pos.x-sloc.x, block.pos.y-sloc.y, block.pos.z-sloc.z)
   love.graphics.points(slx,sly)
 
@@ -197,11 +255,16 @@ local function drawWorld(model)
     drawGrid()
   end
 
-  if model.flags.drawSprites then
-    drawSprite(model.images, model.sprite)
-  end
-  if model.flags.drawSpriteGeom then
-    drawSpriteDebug(model.images, model.sprite)
+  for i=1,#model.drawables do
+    local dr = model.drawables[i]
+    if dr.type == "spriteBox" then
+      if model.flags.drawSprites then
+        drawSprite(model.images, dr)
+      end
+      if model.flags.drawSpriteGeom then
+        drawSpriteDebug(model.images, dr)
+      end
+    end
   end
 
   love.graphics.pop()
