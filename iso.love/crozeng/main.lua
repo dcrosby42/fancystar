@@ -53,11 +53,11 @@ function loadItUp(opts)
     Config.height = love.graphics.getHeight()
   end
 
-  world = RootModule.newWorld(Hooks.moduleOpts)
+  world = RootModule.newWorld(opts.newWorldOpts)
   clearErrorMode()
 end
 
-local function reloadRootModule()
+local function reloadRootModule(newWorldOpts)
   if Hooks.module_name then
     local names = ModuleLoader.list_deps_of(Hooks.module_name)
     for i=1,#names do
@@ -66,7 +66,7 @@ local function reloadRootModule()
     ModuleLoader.uncache_package(Hooks.module_name)
 
 
-    ok,err = xpcall(function() loadItUp({doOnload=false}) end, debug.traceback)
+    ok,err = xpcall(function() loadItUp({doOnload=false, newWorldOpts=newWorldOpts}) end, debug.traceback)
     if ok then
       print("crozeng: Reloaded root module.")
       clearErrorMode()
@@ -99,7 +99,7 @@ local function updateWorld(action)
     if sidefx then
       for i=1,#sidefx do
         if sidefx[i].type == 'crozeng.reloadRootModule' then
-          reloadRootModule()
+          reloadRootModule(sidefx[i].opts)
         end
       end
     end
