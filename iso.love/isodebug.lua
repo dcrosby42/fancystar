@@ -94,7 +94,7 @@ IsoDebug.drawBlock = function(block,color)
     }
   }
   local r,g,b,a = unpack(color)
-  love.graphics.setColor(r,g,b,a)
+  love.graphics.setColor(r,g,b,100)
   for i=1,#faces do
     love.graphics.polygon("fill",faces[i][1][1],faces[i][1][2],faces[i][2][1],faces[i][2][2],faces[i][3][1],faces[i][3][2],faces[i][4][1],faces[i][4][2])
   end
