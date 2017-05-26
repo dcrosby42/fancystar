@@ -186,6 +186,7 @@ function valsearchfirst(t,matchFn,callbackFn)
   end
 end
 
+
 function tfind(t, fn)
   for k,v in pairs(t) do
     if fn(v,k) == true then
@@ -214,6 +215,39 @@ function tfindallby(t,key,val)
   for _,v in pairs(t) do
     if v[key] == val then
       table.insert(res, v)
+    end
+  end
+  return res
+end
+
+function lfind(list, fn)
+  for i=1,#list do
+    if fn(list[i],i) == true then
+      return v
+    end
+  end
+end
+function lfindby(list,key,val)
+  for i=1,#list do
+    if list[i][key] == val then
+      return list[i]
+    end
+  end
+end
+function lfindall(list,fn)
+  local res = {}
+  for i=1,#list do
+    if fn(list[i],i) == true then
+      table.insert(res, list[i])
+    end
+  end
+  return res
+end
+function lfindallby(t,key,val)
+  local res = {}
+  for i=1,#list do
+    if list[i][key] == val then
+      table.insert(res, list[i])
     end
   end
   return res
