@@ -7,14 +7,32 @@ local HALF_TH = Iso.HALF_TH
 
 local IsoDebug = {}
 
-local function drawTileOutline(sx,sy,sz)
+IsoDebug.drawTileOutline = function(sx,sy,sz,side)
   local x,y = spaceToScreen_(sx,sy,sz)
-  love.graphics.line(
-    x,         y,
-    x+HALF_TW, y-HALF_TH,
-    x,         y-HALF_TW,
-    x-HALF_TW, y-HALF_TH,
-    x,         y)
+  if side == "right" then
+    local upx,upy = spaceToScreen_(sx,sy,sz+1)
+    love.graphics.line(
+      x,         y,
+      upx,       upy,
+      upx+HALF_TW, upy-HALF_TH,
+      x+HALF_TW, y-HALF_TH,
+      x,         y)
+  elseif side == "left" then
+    local upx,upy = spaceToScreen_(sx,sy,sz+1)
+    love.graphics.line(
+      x,         y,
+      upx,       upy,
+      upx+HALF_TW, upy+HALF_TH,
+      x+HALF_TW, y+HALF_TH,
+      x,         y)
+  else
+    love.graphics.line(
+      x,         y,
+      x+HALF_TW, y-HALF_TH,
+      x,         y-HALF_TW,
+      x-HALF_TW, y-HALF_TH,
+      x,         y)
+  end
 end
 
 -- Draw our virtual graph paper
@@ -22,7 +40,7 @@ IsoDebug.drawFloorGrid = function ()
   local z = 0
   for x=0,5 do
     for y = 0,5 do
-      drawTileOutline(x,y,z)
+      IsoDebug.drawTileOutline(x,y,z,"bottom")
     end
   end
 end
@@ -51,7 +69,8 @@ end
 
 -- Draw a block's three visible faces using translucent color
 -- and solid edges, based on block.color
-IsoDebug.drawBlock = function(block)
+IsoDebug.drawBlock = function(block,color)
+  color = color or block.color or Colors.White
   local pos = block.pos
   local size = block.size
   local faces = {
@@ -74,12 +93,12 @@ IsoDebug.drawBlock = function(block)
       spaceToScreen(pos.x+size.x,pos.y,pos.z+size.z),
     }
   }
-  local r,g,b,a = unpack(block.color)
-  love.graphics.setColor(r,g,b,200)
+  local r,g,b,a = unpack(color)
+  love.graphics.setColor(r,g,b,a)
   for i=1,#faces do
     love.graphics.polygon("fill",faces[i][1][1],faces[i][1][2],faces[i][2][1],faces[i][2][2],faces[i][3][1],faces[i][3][2],faces[i][4][1],faces[i][4][2])
   end
-  love.graphics.setColor(r,g,b,255)
+  love.graphics.setColor(r,g,b,a)
   for i=1,#faces do
     love.graphics.polygon("line",faces[i][1][1],faces[i][1][2],faces[i][2][1],faces[i][2][2],faces[i][3][1],faces[i][3][2],faces[i][4][1],faces[i][4][2])
   end

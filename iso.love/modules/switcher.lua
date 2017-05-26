@@ -1,20 +1,20 @@
+local Newui = require 'modules/newui'
+local Editor = require 'modules/editor'
 
-local function newModuleSub(modname,key)
-  print("newModuleSub: "..modname)
-  local module = require("modules."..modname)
+local function newModuleSub(module,key)
   local state = module.newWorld()
-  return {name=modname, key=key, module=module, state=state}
+  return {key=key, module=module, state=state}
 end
 
-local function newWorld()
+local function newWorld(opts)
+  opts = opts or {}
   local model ={
     subs={
-      template=newModuleSub("template","f1"),
-      newui=newModuleSub("newui","f2"),
-      -- devui=newModuleSub("devui","f3"),
+      newui=newModuleSub(Newui,"f1"),
+      editor=newModuleSub(Editor,"f2"),
     },
-    current="template",
   }
+  model.current = opts.current or "newui"
   return model
 end
 
@@ -24,12 +24,17 @@ local function updateWorld(model,action)
       for k,sub in pairs(model.subs) do
         if sub.key == action.key then
           model.current = k
+          print("Switcher: '"..k.."'")
           if action.gui then
+            print("Switcher: resetting world state")
             local sub = model.subs[model.current]
             sub.state = sub.module.newWorld()
           end
           return model, nil
         end
+      end
+      if action.key == 'escape' then
+        return model, {{type="crozeng.reloadRootModule", opts={current=model.current}}}
       end
     end
   end

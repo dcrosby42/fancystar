@@ -180,8 +180,8 @@ local function updateWorld(model,action)
     elseif action.key == 'b' then
       model.drawSprites = not model.drawSprites
 
-    elseif action.key == 'r' then
-      return model, {{type="crozeng.reloadRootModule"}}
+    -- elseif action.key == 'r' then
+    --   return model, {{type="crozeng.reloadRootModule"}}
     elseif action.key == 'space' then
       model.selectedBlock = model.selectedBlock + 1
       if model.selectedBlock > #model.blockIndex then

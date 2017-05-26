@@ -181,7 +181,7 @@ local function sortBlocks(blocks)
 end
 
 local function transCopy(p, tr)
-  return {p[1]+tr[1], p[2]+tr[2], p[3]+tr[3]}
+  return {x=p.x+tr.x, y=p.y+tr.y, z=p.z+tr.z}
 end
 
 local function imgWidthToWorldWidth(imgw)
@@ -190,6 +190,14 @@ end
 
 local function imgHeightToWorldHeight(imgh)
   return imgh * PER_TILE_Z
+end
+
+local function worldOrigin()
+  return {x=0,y=0,z=0}
+end
+
+local function worldUnit()
+  return {x=1,y=1,z=1}
 end
 
 Iso.sortBlocks = sortBlocks
@@ -202,5 +210,7 @@ Iso.getFrontBlock = getFrontBlock
 Iso.transCopy = transCopy
 Iso.imgWidthToWorldWidth = imgWidthToWorldWidth
 Iso.imgHeightToWorldHeight = imgHeightToWorldHeight
+Iso.worldOrigin = worldOrigin
+Iso.worldUnit = worldUnit
 
 return Iso
