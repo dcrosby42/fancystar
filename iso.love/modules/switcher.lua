@@ -14,7 +14,7 @@ local function newWorld(opts)
       editor=newModuleSub(Editor,"f2"),
     },
   }
-  model.current = opts.current or "newui"
+  model.current = opts.current or "editor"
   return model
 end
 

@@ -82,13 +82,13 @@ local function newWorld()
     spriteId="maya1",
     pos = {x=0.5,y=0.5,z=0}
   }
-  local comp2 = {
-    cid="c2",
-    spriteId="maya1",
-    pos = {x=-0.3,y=0.3,z=0}
-  }
-  model.comps = {comp,comp2}
-  -- model.comps = {comp}
+  -- local comp2 = {
+  --   cid="c2",
+  --   spriteId="maya1",
+  --   pos = {x=-0.3,y=0.3,z=0}
+  -- }
+  -- model.comps = {comp,comp2}
+  model.comps = {comp}
   model.drawables = {}
 
   updateDrawables(model)
