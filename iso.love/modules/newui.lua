@@ -7,8 +7,8 @@ local newBlock = Iso.newBlock
 local IsoDebug = require 'isodebug'
 local serialize = require 'serialize'
 
-local BlenderCube96 = "images/blender_cube_96.png"
-local Maya = "images/maya_trans.png"
+local BlenderCube96 = "assets/images/blender_cube_96.png"
+local Maya = "assets/images/maya_trans.png"
 
 
 local function newCubeSprite(model,pos,color,name)

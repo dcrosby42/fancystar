@@ -47,6 +47,7 @@ local function pop_require_dep(m)
   m.state.stack[#m.state.stack] = nil
 end
 
+lua_require = require
 local original_require = require
 
 require = function(name)

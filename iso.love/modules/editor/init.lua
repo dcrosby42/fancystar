@@ -1,9 +1,9 @@
 local Iso = require 'iso'
 local IsoDebug = require 'isodebug'
 local Colors = require 'colors'
-
-local Maya = "images/maya_trans.png"
-local BlenderCube96 = "images/blender_cube_96.png"
+local Resources = require 'resources'
+local Maya = "assets/images/maya_trans.png"
+local BlenderCube96 = "assets/images/blender_cube_96.png"
 
 local sprites = {
   maya1= {
@@ -62,6 +62,8 @@ local function updateDrawables(model)
 end
 
 local function newWorld()
+  Resources.test()
+
   local model ={
     view={x=400, y=400,scale=1.5,zoomInc=0.25},
     mouse={down=false,pan=false,move=false},
