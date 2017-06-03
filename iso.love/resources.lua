@@ -184,4 +184,6 @@ return {
   listAllResourceFiles=function() return tconcat(listAssetFiles(), listDataFiles()) end,
   loadFile=loadFile,
   saveFile=saveFile,
+  test=function()
+  end,
 }

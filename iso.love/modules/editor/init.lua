@@ -2,6 +2,9 @@ local Iso = require 'iso'
 local IsoDebug = require 'isodebug'
 local Colors = require 'colors'
 local Resources = require 'resources'
+local suit = require 'SUIT'
+local Widgets = require 'modules.editor.widgets'
+
 local Maya = "assets/images/maya_trans.png"
 local BlenderCube96 = "assets/images/blender_cube_96.png"
 
@@ -61,41 +64,6 @@ local function updateDrawables(model)
   model.drawables = Iso.sortBlocks(keeps)
 end
 
-local function newWorld()
-  Resources.test()
-
-  local model ={
-    view={x=400, y=400,scale=1.5,zoomInc=0.25},
-    mouse={down=false,pan=false,move=false},
-    flags={
-      grid=true,
-      drawSprites=true,
-      drawSpriteGeom=true,
-    },
-    res={sprites=sprites},
-  }
-  model.images = {}
-  model.images[BlenderCube96] = love.graphics.newImage(BlenderCube96)
-  model.images[Maya] = love.graphics.newImage(Maya)
-  -- addSprite(model)
-
-  local comp = {
-    cid="c1",
-    spriteId="maya1",
-    pos = {x=0.5,y=0.5,z=0}
-  }
-  -- local comp2 = {
-  --   cid="c2",
-  --   spriteId="maya1",
-  --   pos = {x=-0.3,y=0.3,z=0}
-  -- }
-  -- model.comps = {comp,comp2}
-  model.comps = {comp}
-  model.drawables = {}
-
-  updateDrawables(model)
-  return model
-end
 
 local function changeZoom(model,zoom)
   if zoom <= 0 then zoom = 0.25 end
@@ -119,8 +87,9 @@ local function handleMouse(model,action)
         model.view.x = model.view.x + action.dx
         model.view.y = model.view.y + action.dy
       elseif model.mouse.move then
-        model.comps[1].pos.x = model.comps[1].pos.x + Iso.imgWidthToWorldWidth(action.dx)
-        model.comps[1].pos.y = model.comps[1].pos.y - Iso.imgWidthToWorldWidth(action.dy)
+        local comp = model.comp
+        comp.pos.x = comp.pos.x + Iso.imgWidthToWorldWidth(action.dx)
+        comp.pos.y = comp.pos.y - Iso.imgWidthToWorldWidth(action.dy)
         updateDrawables(model)
       end
     end
@@ -138,14 +107,46 @@ local function handleMouse(model,action)
   end
 end
 
-local function updateWorld(model,action)
-  if action.type == "keyboard" and action.state == "pressed" then
-    handleKeyPressed(action.key, model, action)
+local tinput = {text="stuff"}
+local function updateGui(model,action)
+  local e = model.editor
+  local comp = model.comp
+  local spr = sprites[comp.spriteId]
+  -- if suit.Button("Hello, World!", e.x,e.y, 200,30).hit then
+  --   print("clicked!")
+  -- end
+  suit.layout:reset(e.x,e.y, 5,5) -- x,y and padding
 
-  elseif action.type == "mouse" then
-    handleMouse(model,action)
+  suit.Label(comp.spriteId, suit.layout:row(200,30))
+  local posW = Widgets.Vector3(suit,"Pos", comp.pos, e.scratch.pos)
+  local spriteW = Widgets.Sprite(suit,"Sprite",spr,e.scratch.sprite)
+  if posW.changed or spriteW.changed then
+    updateDrawables(model)
   end
-  return model, nil
+
+  -- suit.Label("dude:", suit.layout:col())
+  -- suit.Label("wat:", suit.layout:col())
+  -- state = suit.Button("Click?", suit.layout:row())
+  -- if state.hit then
+  --   print("Ouch!")
+  -- end
+  --
+  -- if suit.Input(tinput, suit.layout:row()).submitted then
+  --     print(tinput.text)
+  -- end
+
+
+-- if the button was pressed at least one time, but a label below
+  -- if show_message then
+  --   suit.Label("How are you today?", 100,150, 300,30)
+  -- end
+  --
+  -- suit.Slider(slider, 100,200, 200,20)
+  -- suit.Label(input.text.." - "..tostring(slider.value), {align="left"},300,200, 200,20)
+  --
+  -- suit.Input(input, 100,300,200,30)
+  -- suit.Label("Hello, "..input.text, {align="left"}, 100,350,200,30)
+
 end
 
 
@@ -244,10 +245,94 @@ local function drawSpriteDebug(images,block)
 end
 
 
+
+local function newWorld()
+  Resources.test()
+
+  local model ={
+    view={x=400, y=400,scale=1.5,zoomInc=0.25},
+    mouse={down=false,pan=false,move=false},
+    flags={
+      grid=true,
+      drawSprites=true,
+      drawSpriteGeom=true,
+    },
+    res={sprites=sprites},
+  }
+  model.images = {}
+  model.images[BlenderCube96] = love.graphics.newImage(BlenderCube96)
+  model.images[Maya] = love.graphics.newImage(Maya)
+  -- addSprite(model)
+
+  local comp = {
+    cid="c1",
+    spriteId="maya1",
+    pos = {x=0.5,y=0.5,z=0}
+  }
+  -- local comp2 = {
+  --   cid="c2",
+  --   spriteId="maya1",
+  --   pos = {x=-0.3,y=0.3,z=0}
+  -- }
+  -- model.comps = {comp,comp2}
+
+  model.comp = comp
+  model.comps = {comp}
+  model.drawables = {}
+
+  model.screen = {w=love.graphics.getWidth(), h=love.graphics.getHeight()}
+  model.editor = {}
+  model.editor.w = 300
+  model.editor.x = model.screen.w-model.editor.w
+  model.editor.y = 0
+  model.editor.scratch = {
+    pos={
+      x={text="0"},
+      y={text="0"},
+      z={text="0"},
+    },
+    sprite={
+      offp={
+        x={text="0"},
+        y={text="0"},
+        z={text="0"},
+      },
+      size={
+        x={text="0"},
+        y={text="0"},
+        z={text="0"},
+      },
+    },
+  }
+
+  updateDrawables(model)
+  return model
+end
+
+local function drawPropEditor(model)
+
+  suit.draw()
+  -- love.graphics.print("Dude")
+
+end
+
+local function updateWorld(model,action)
+  if action.type == "tick" then
+    updateGui(model,action)
+  elseif action.type == "keyboard" and action.state == "pressed" then
+    handleKeyPressed(action.key, model, action)
+    suit.keypressed(action.key)
+  elseif action.type == "textinput" then
+    suit.textinput(action.text)
+  elseif action.type == "mouse" then
+    handleMouse(model,action)
+  end
+  return model, nil
+end
+
 local function drawWorld(model)
   love.graphics.setBackgroundColor(0,0,50)
   love.graphics.setColor(255,255,255)
-
 
   love.graphics.push()
   love.graphics.translate(model.view.x, model.view.y)
@@ -270,6 +355,8 @@ local function drawWorld(model)
   end
 
   love.graphics.pop()
+
+  drawPropEditor(model)
 end
 
 return {
