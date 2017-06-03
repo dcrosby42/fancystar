@@ -228,6 +228,10 @@ function love.joystickreleased( joystick, button )
   updateWorld(toJoystickAction("button", button,0))
 end
 
+function love.textinput(text)
+  updateWorld({type='textinput',text=text})
+end
+
 function love.resize(w,h)
   updateWorld({type='resize',w=w, h=h})
 end
