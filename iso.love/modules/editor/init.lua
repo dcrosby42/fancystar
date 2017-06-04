@@ -1,11 +1,14 @@
 local Iso = require 'iso'
 local IsoDebug = require 'isodebug'
 local Colors = require 'colors'
-local Resources = require 'resources'
+local DataLoader = require 'dataloader'
 local suit = require 'SUIT'
 local Widgets = require 'modules.editor.widgets'
 
+local Pics = require("data/pics")
+
 local Maya = "assets/images/maya_trans.png"
+local Freya = "assets/images/freya_trans.png"
 local BlenderCube96 = "assets/images/blender_cube_96.png"
 
 local sprites = {
@@ -17,12 +20,21 @@ local sprites = {
     offp={x=0.5, y=0.5, z=0},
     size={x=0.6, y=0.6, z=1.55},
     debug={color=Colors.White},
+  },
+  freya1= {
+    type="sprite",
+    id="maya1",
+    name="Freya",
+    image={name=Freya, offx=38, offy=114},
+    offp={x=0.5, y=0.5, z=0},
+    size={x=0.7, y=0.6, z=1.55},
+    debug={color=Colors.White},
   }
 }
 
 local function updateDrawables(model)
   local sawCids = {}
-  -- For each comp, either insert a new drawable or update an existing
+  -- For each com either insert a new drawable or update an existing
   for i=1,#model.comps do
     local comp = model.comps[i]
     local sprite = model.res.sprites[comp.spriteId]
@@ -247,7 +259,8 @@ end
 
 
 local function newWorld()
-  Resources.test()
+  DataLoader.test()
+  Pics.test()
 
   local model ={
     view={x=400, y=400,scale=1.5,zoomInc=0.25},
@@ -262,11 +275,13 @@ local function newWorld()
   model.images = {}
   model.images[BlenderCube96] = love.graphics.newImage(BlenderCube96)
   model.images[Maya] = love.graphics.newImage(Maya)
+  model.images[Freya] = love.graphics.newImage(Freya)
   -- addSprite(model)
 
   local comp = {
     cid="c1",
-    spriteId="maya1",
+    -- spriteId="maya1",
+    spriteId="freya1",
     pos = {x=0.5,y=0.5,z=0}
   }
   -- local comp2 = {

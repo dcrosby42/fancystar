@@ -148,12 +148,20 @@ local function recursiveFileList(path)
   return {}
 end
 
-local function listAssetFiles()
-  return recursiveFileList(gamePath("assets"))
+local function listAssetFiles(subdir)
+  local suff = ""
+  if subdir ~= "" then
+    suff = "/"..subdir
+  end
+  return recursiveFileList(gamePath("assets"..suff))
 end
 
-local function listDataFiles()
-  return recursiveFileList(gamePath("data"))
+local function listDataFiles(subdir)
+  local suff = ""
+  if subdir ~= "" then
+    suff = "/"..subdir
+  end
+  return recursiveFileList(gamePath("data"..suff))
 end
 
 
