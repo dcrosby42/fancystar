@@ -2,6 +2,7 @@ local Pics = require 'data.pics'
 
 local function newWorld()
   local model ={}
+  model.t = 0
   model.animt = 0
   model.animt2 = 0
   model.p = Pics.load()
@@ -18,11 +19,46 @@ end
 
 local function updateWorld(model,action)
   if action.type == 'tick' then
+    model.t = model.t + action.dt
     model.animt = model.animt + action.dt
     model.animt2 = model.animt2 + action.dt
   end
 
   return model, nil
+end
+
+local function drawAnimDebug(anim, label, x,y, t)
+  love.graphics.print(label,x,y)
+  y = y + 15
+  local topy = y
+
+  -- Animate at 1 fps
+  local lt = (t % #anim) + 1
+  local fidx = math.floor(lt)
+  local pic = anim[fidx]
+  love.graphics.draw(pic.image, pic.quad, x,y)
+  y = y + pic.rect.h
+  love.graphics.print(""..fidx.." ("..math.round(lt,2)..")", x,y)
+  y = topy
+
+  x = x + anim[1].rect.w + 20
+
+  -- Draw the individual frames:
+  for i,pic in ipairs(anim) do
+    love.graphics.draw(pic.image, pic.quad, x,y)
+    y = y + pic.rect.h
+    -- love.graphics.print(pic.name,x,y)
+    love.graphics.print(i,x,y)
+    x = x + pic.rect.w + 1
+    y = topy
+  end
+
+
+
+  y = y + anim[1].rect.h + 15
+  x = 0
+
+  return x,y
 end
 
 local function drawWorld(model)
@@ -36,41 +72,10 @@ local function drawWorld(model)
   -- print(tdebug(model.p.pics))
   local x = 0
   local y = 0
-  love.graphics.draw(pic.image,pic.quad,x,y)
-  x = x + pic.rect.w
-  love.graphics.draw(pic2.image,pic2.quad,x,y)
-  x = x + pic2.rect.w
-  love.graphics.draw(pic3.image,pic3.quad,x,y)
-
-  y = y + pic.rect.h
-  x = 0
-  love.graphics.setColor(255,255,255,100)
-  love.graphics.draw(pic.image,pic.quad,x,y)
-  love.graphics.draw(pic2.image,pic2.quad,x,y)
-  love.graphics.draw(pic3.image,pic3.quad,x,y)
-  love.graphics.setColor(255,255,255,255)
-
-  y = y + pic.rect.h
-  if model.animt < 1 then
-    love.graphics.draw(pic.image,pic.quad,x,y)
-  elseif model.animt < 2 then
-    love.graphics.draw(pic2.image,pic2.quad,x,y)
-  else
-    love.graphics.draw(pic3.image,pic3.quad,x,y)
-    if model.animt > 3 then
-      model.animt = 0
-    end
-  end
-
-  x = x + pic.rect.w
-  if model.animt2 < 0.16 then
-    love.graphics.draw(pic2.image,pic2.quad,x,y)
-  else
-    love.graphics.draw(pic3.image,pic3.quad,x,y)
-    if model.animt2 > 0.32 then
-      model.animt2 = 0
-    end
-  end
+  x,y = drawAnimDebug(model.p.anims.tshirt_guy.fl.stand, "tshirt_guy.fl.stand",x,y, model.t)
+  x,y = drawAnimDebug(model.p.anims.tshirt_guy.fl.walk, "tshirt_guy.fl.walk",x,y, model.t)
+  x,y = drawAnimDebug(model.p.anims.tshirt_guy.fr.stand, "tshirt_guy.fr.stand",x,y, model.t)
+  x,y = drawAnimDebug(model.p.anims.tshirt_guy.fr.walk, "tshirt_guy.fr.walk",x,y, model.t)
 end
 
 return {
