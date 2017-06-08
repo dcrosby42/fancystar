@@ -22,24 +22,24 @@ local function handleMouse(model,action)
   end
 end
 
-local function drawAnimDebug(anim, label, x,y, t)
+local function drawFramesetDebug(frameset, label, x,y, t)
   love.graphics.print(label,x,y)
   y = y + 15
   local topy = y
 
   -- Animate at 1 fps
-  local lt = (t % #anim) + 1
+  local lt = (t % #frameset) + 1
   local fidx = math.floor(lt)
-  local pic = anim[fidx]
+  local pic = frameset[fidx]
   love.graphics.draw(pic.image, pic.quad, x,y)
   y = y + pic.rect.h
   love.graphics.print(""..fidx.." ("..math.round(lt,2)..")", x,y)
   y = topy
 
-  x = x + anim[1].rect.w + 20
+  x = x + frameset[1].rect.w + 20
 
   -- Draw the individual frames:
-  for i,pic in ipairs(anim) do
+  for i,pic in ipairs(frameset) do
     love.graphics.draw(pic.image, pic.quad, x,y)
     y = y + pic.rect.h
     -- love.graphics.print(pic.name,x,y)
@@ -48,17 +48,17 @@ local function drawAnimDebug(anim, label, x,y, t)
     y = topy
   end
 
-  y = y + anim[1].rect.h + 15 + 15
+  y = y + frameset[1].rect.h + 15 + 15
   x = 0
 
   return x,y
 end
 
-local function drawCharacterAnimDebug(anims, animName, x,y, t)
-  local char = anims[animName]
+local function drawCharacterFramesetDebug(framesets, framesetName, x,y, t)
+  local char = framesets[framesetName]
   for dir,actions in pairs(char) do
     for action,frames in pairs(actions) do
-      x,y = drawAnimDebug(frames, animName.."."..dir.."."..action, x,y, t)
+      x,y = drawFramesetDebug(frames, framesetName.."."..dir.."."..action, x,y, t)
     end
   end
   return x,y
@@ -95,7 +95,7 @@ local function drawWorld(model)
   love.graphics.translate(model.view.x, model.view.y)
   -- love.graphics.scale(model.view.scale,model.view.scale)
 
-  local x,y = drawCharacterAnimDebug(model.p.anims, "tshirt_guy",0,0, model.t)
+  local x,y = drawCharacterFramesetDebug(model.p.framesets, "tshirt_guy",0,0, model.t)
 
   love.graphics.pop()
 end

@@ -10,6 +10,7 @@ local Pics = require("data/pics")
 local Maya = "assets/images/maya_trans.png"
 local Freya = "assets/images/freya_trans.png"
 local BlenderCube96 = "assets/images/blender_cube_96.png"
+local TshirtGuy = "assets/images/freya_trans.png"
 
 local sprites = {
   maya1= {
@@ -26,6 +27,15 @@ local sprites = {
     id="maya1",
     name="Freya",
     image={name=Freya, offx=38, offy=114},
+    offp={x=0.5, y=0.5, z=0},
+    size={x=0.7, y=0.6, z=1.55},
+    debug={color=Colors.White},
+  },
+  tshirt_guy= {
+    type="sprite",
+    id="tshirt_guy",
+    name="TshirtGuy",
+    image={name=TShirtGuy, offx=38, offy=114},
     offp={x=0.5, y=0.5, z=0},
     size={x=0.7, y=0.6, z=1.55},
     debug={color=Colors.White},
@@ -53,7 +63,11 @@ local function updateDrawables(model)
       -- new drawable from sprite:
       local dr = Iso.newBlock(pos, sprite.size, sprite.debug.color, sprite.name)
       dr.type = "spriteBox"
-      dr.image = tcopy(sprite.image)
+      if sprite.image then
+        dr.image = tcopy(sprite.image)
+      else
+        dr.pic = tcopy(sprite.image)
+      end
       dr.offp = sprite.offp
       dr.cid = comp.cid
       table.insert(model.drawables, dr)

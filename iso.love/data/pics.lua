@@ -14,9 +14,9 @@ end
 local function test()
 end
 
-local function addAnimPics(stuff, imgname, name, defs)
-  local anim = {}
-  stuff.anims[name] = anim
+local function buildPicsAndFramesets(stuff, imgname, name, defs)
+  local frameset = {}
+  stuff.framesets[name] = frameset
 
   local img = stuff.images[imgname]
 
@@ -34,24 +34,24 @@ local function addAnimPics(stuff, imgname, name, defs)
 
     local dir,action,frstr = unpack(split(pathstr,"."))
     local frnum = tonumber(frstr)
-    anim[dir] = anim[dir] or {}
-    anim[dir][action] = anim[dir][action] or {}
-    anim[dir][action][frnum] = pic
+    frameset[dir] = frameset[dir] or {}
+    frameset[dir][action] = frameset[dir][action] or {}
+    frameset[dir][action][frnum] = pic
   end
 end
 
 Pics.load = function()
   local images = loadAllImages()
   local pics = {}
-  local anims = {}
+  local framesets = {}
 
   local stuff = {
     images=images,
     pics=pics,
-    anims=anims,
+    framesets=framesets,
   }
 
-  addAnimPics(stuff, "tshirt_guy.png",
+  buildPicsAndFramesets(stuff, "tshirt_guy.png",
     "tshirt_guy", {
     {'fl.stand.1', {104,158, 50,100}},
 
