@@ -7,8 +7,30 @@ local timerSystem = require 'systems/timer'
 local Comps = require 'comps'
 
 local CHEAT = {}
-local BlenderCube96 = "assets/images/blender_cube_96.png"
+local BlenderCube96 = "assets/images/blender_cube_96.png" -- 96x128
+local Maya = "assets/images/maya_trans.png"
+local Freya = "assets/images/freya_trans.png"
 
+CHEAT.isoSprites = {
+  maya1= {
+    id="maya1",
+    image={name=Maya, offx=38, offy=114, width=68, height=106},
+    offp={x=0.5, y=0.5, z=0},
+    size={x=0.6, y=0.6, z=1.55},
+  },
+  freya1= {
+    id="freya1",
+    image={name=Freya, offx=38, offy=114, width=68, height=106},
+    offp={x=0.5, y=0.5, z=0},
+    size={x=0.7, y=0.6, z=1.55},
+  },
+  blockRed = {
+    id="blockRed",
+    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    offp={x=0, y=0, z=0},
+    size={x=1, y=1, z=1},
+  },
+}
 
 local Updaters = {}
 
@@ -34,34 +56,44 @@ local function setupEstore(estore, resources, opts)
   })
   isoWorld:newChild({
     {'iso',{}},
+    {'isoSprite', {id='blockRed'}},
     {'isoPos', {x=0,y=0,z=0}},
-    {'isoSize', {x=1,y=1,z=1}},
-    {'color', {color=Colors.Blue}},
   })
   isoWorld:newChild({
     {'iso',{}},
-    {'isoPos', {x=1,y=0,z=0}},
-    {'isoSize', {x=1,y=1,z=1}},
-    {'color', {color=Colors.Red}},
+    {'isoSprite', {id='maya1'}},
+    -- {'isoPos', {x=0.5,y=0.5,z=1}},
+    {'isoPos', {x=0,y=0,z=1}},
   })
   isoWorld:newChild({
     {'iso',{}},
-    {'isoPos', {x=0,y=1,z=0}},
-    {'isoSize', {x=1,y=1,z=1}},
-    {'color', {color=Colors.White}},
+    {'isoSprite', {id='freya1'}},
+    {'isoPos', {x=1,y=0,z=1}},
   })
-  isoWorld:newChild({
-    {'iso',{}},
-    {'isoPos', {x=1,y=1,z=0}},
-    {'isoSize', {x=1,y=1,z=1}},
-    {'color', {color=Colors.Yellow}},
-  })
-  isoWorld:newChild({
-    {'iso',{}},
-    {'isoPos', {x=1,y=1,z=1}},
-    {'isoSize', {x=1,y=1,z=1}},
-    {'color', {color=Colors.Green}},
-  })
+  -- isoWorld:newChild({
+  --   {'iso',{}},
+  --   {'isoPos', {x=1,y=0,z=0}},
+  --   {'isoSize', {x=1,y=1,z=1}},
+  --   {'color', {color=Colors.Red}},
+  -- })
+  -- isoWorld:newChild({
+  --   {'iso',{}},
+  --   {'isoPos', {x=0,y=1,z=0}},
+  --   {'isoSize', {x=1,y=1,z=1}},
+  --   {'color', {color=Colors.White}},
+  -- })
+  -- isoWorld:newChild({
+  --   {'iso',{}},
+  --   {'isoPos', {x=1,y=1,z=0}},
+  --   {'isoSize', {x=1,y=1,z=1}},
+  --   {'color', {color=Colors.Yellow}},
+  -- })
+  -- isoWorld:newChild({
+  --   {'iso',{}},
+  --   {'isoPos', {x=1,y=1,z=1}},
+  --   {'isoSize', {x=1,y=1,z=1}},
+  --   {'color', {color=Colors.Green}},
+  -- })
 end
 
 local function updateEstore(world,action)
@@ -91,14 +123,13 @@ local function newCubeSprite(pos,color)
   local b = Iso.newSortable(pos, {x=1,y=1,z=1})
   b.type = "sprite"
   b.color = color or {255,255,255,255}
-  print(b.color)
   local img = CHEAT.images[BlenderCube96]
   b.image = {
     name = BlenderCube96,
     offx = img:getWidth() / 2,
     offy = img:getHeight(),
-    width = img:getWidth(),
-    height = img:getHeight(),
+    -- width = img:getWidth(),
+    -- height = img:getHeight(),
   }
   b.dbg = {}
   return b
@@ -136,12 +167,41 @@ local function getIsoPos(e)
   end
 end
 
-local function getIsoSize(e)
-    return {
-      x=e.isoSize.x,
-      y=e.isoSize.y,
-      z=e.isoSize.z,
+local function applyOffset(isoPos, offp)
+  isoPos.x = isoPos.x - offp.x
+  isoPos.y = isoPos.y - offp.y
+  isoPos.z = isoPos.z - offp.z
+  return isoPos
+end
+
+local function updateCachedBlock(block,e)
+  block.entity = e -- ?.  reset this just in case the Entity object is actually a new Lua table
+  if block.spriteId ~= e.isoSprite.id then
+    block.spriteId = e.isoSprite.id
+    local sprite = CHEAT.isoSprites[block.spriteId]
+    block.sprite = sprite
+    block.size = sprite.size
+    if sprite.color then
+      block.color = sprite.color
+    else
+      block.color = {255,255,255,255} -- white
+    end
+    block.image = {
+      name = sprite.image.name,
+      offx = sprite.image.offx,
+      offy = sprite.image.offy,
+      width = sprite.image.width,
+      height = sprite.image.height,
     }
+  end
+  block.pos = applyOffset(getIsoPos(e), block.sprite.offp)
+  return block
+end
+
+local function newCachedBlock(e)
+  local block = Iso.newSortable()
+  block.type = "spriteEntityBlock" -- not used?
+  return block
 end
 
 local function drawIsoWorld(isoWorldEnt, estore, resources)
@@ -152,39 +212,12 @@ local function drawIsoWorld(isoWorldEnt, estore, resources)
     table.insert(saw, e.eid)
     if cache[e.eid] then
       -- UPDATE CACHED BLOCK
-      local block = cache[e.eid]
-      block.entity = e -- ?.  reset this just in case the Entity object is actually a new Lua table
-      block.pos = getIsoPos(e)
-      block.size = getIsoSize(e)
-      if e.color then
-        block.color = e.color.color
-      else
-        block.color = {255,255,255,255}
-      end
-      -- TODO: check image name difference --> rebuild block.image table
+      updateCachedBlock(cache[e.eid], e)
     else
       -- ADD NEW CACHED BLOCK
-      -- table.insert(CHEAT.blocks, newCubeSprite({x=0,y=0,z=0}, Colors.Blue))
-
-      local block = Iso.newSortable(getIsoPos(e), getIsoSize(e))
-      block.type = "iso-entity"
-      block.entity = e -- ?.  reset this just in case the Entity object is actually a new Lua table
-      if e.color then
-        block.color = e.color.color
-      else
-        block.color = {255,255,255,255}
-      end
-      -- TODO base this in info from a component
-      local img = CHEAT.images[BlenderCube96]
-      block.image = {
-        name = BlenderCube96,
-        offx = img:getWidth() / 2,
-        offy = img:getHeight(),
-        width = img:getWidth(),
-        height = img:getHeight(),
-      }
-
-      cache[e.eid] = block
+      cache[e.eid] = updateCachedBlock(newCachedBlock(e), e)
+      local bl = cache[e.eid]
+      print("new cached block "..e.eid..": "..tdebug(bl.image))
     end
   end)
 
@@ -231,6 +264,8 @@ local function newWorld(opts)
 
   CHEAT.images={}
   CHEAT.images[BlenderCube96] = love.graphics.newImage(BlenderCube96)
+  CHEAT.images[Maya] = love.graphics.newImage(Maya)
+  CHEAT.images[Freya] = love.graphics.newImage(Freya)
 
   CHEAT.blocks={} -- list
   CHEAT.blockCache={} -- map
