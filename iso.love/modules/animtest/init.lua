@@ -95,7 +95,9 @@ local function drawWorld(model)
   love.graphics.translate(model.view.x, model.view.y)
   -- love.graphics.scale(model.view.scale,model.view.scale)
 
-  local x,y = drawCharacterFramesetDebug(model.p.framesets, "tshirt_guy",0,0, model.t)
+  local x,y = drawCharacterFramesetDebug(model.p.framesets, "maya",0,0, model.t)
+  local x,y = drawCharacterFramesetDebug(model.p.framesets, "freya",x,y, model.t)
+  local x,y = drawCharacterFramesetDebug(model.p.framesets, "tshirt_guy",x,y, model.t)
 
   love.graphics.pop()
 end

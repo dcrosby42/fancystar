@@ -157,16 +157,11 @@ local function drawSpriteBlock(block)
     block.image.offx, block.image.offy -- xoff,yoff
   )
   if block.debug.on then
-    -- Draw the x,y location as a white dot:
-    -- love.graphics.setPointSize(4)
-    -- love.graphics.setColor(255,255,255)
-    -- love.graphics.points(x,y)
-
     -- draw image bounds as a red rectangle:
     love.graphics.setColor(255,100,100)
     love.graphics.rectangle("line",x-block.image.offx,y-block.image.offy, block.image.width,block.image.height)
 
-    -- draw a transluscent cube around the sprite:
+    -- draw sprite box bounds as a transluscent cube
     IsoDebug.drawBlock(block,{255,255,255,100})
 
     -- draw "real" position of sprite as a yellow dot:

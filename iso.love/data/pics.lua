@@ -14,29 +14,49 @@ end
 local function test()
 end
 
-local function buildPicsAndFramesets(stuff, imgname, name, defs)
-  local frameset = {}
-  stuff.framesets[name] = frameset
-
+local function buildPic(stuff, imgname,name,pathstr,rect)
   local img = stuff.images[imgname]
+  local x,y,w,h = unpack(rect or {})
+  if x == nil then
+    x = 0
+    y = 0
+  end
+  if w == nil then
+    w = img:getWidth()
+    h = img:getHeight()
+  end
+  local picname = name .. "." .. pathstr
+  local pic = {
+    image=img,
+    name=picname,
+    quad=love.graphics.newQuad(x, y, w, h, img:getDimensions()),
+    rect={x=x,y=y,w=w,h=h},
+  }
+  stuff.pics[picname] = pic
+  return pic
+end
 
+local function updateFrameset(stuff, name, pathstr, pic)
+  local dir,action,frstr = unpack(split(pathstr,"."))
+  local frnum = tonumber(frstr)
+
+  stuff.framesets[name] = stuff.framesets[name] or {}
+  local frameset = stuff.framesets[name]
+  frameset[dir] = frameset[dir] or {}
+  frameset[dir][action] = frameset[dir][action] or {}
+  frameset[dir][action][frnum] = pic
+  return frameset
+end
+
+local function buildPicAndFrameset(stuff,imgname,name,pathstr,rect)
+  local pic = buildPic(stuff,imgname,name,pathstr,rect)
+  frameset = updateFrameset(stuff,name,pathstr,pic)
+end
+
+local function buildPicsAndFramesets(stuff, imgname, name, defs)
   for i,def in ipairs(defs) do
-    local pathstr = def[1]
-    local x,y,w,h = unpack(def[2])
-    local picname = name .. "." .. pathstr
-    local pic = {
-      image=img,
-      name=picname,
-      quad=love.graphics.newQuad(x, y, w, h, img:getDimensions()),
-      rect={x=x,y=y,w=w,h=h},
-    }
-    stuff.pics[picname] = pic
-
-    local dir,action,frstr = unpack(split(pathstr,"."))
-    local frnum = tonumber(frstr)
-    frameset[dir] = frameset[dir] or {}
-    frameset[dir][action] = frameset[dir][action] or {}
-    frameset[dir][action][frnum] = pic
+    local pathstr,rect = unpack(def)
+    buildPicAndFrameset(stuff, imgname, name, pathstr, rect)
   end
 end
 
@@ -50,6 +70,10 @@ Pics.load = function()
     pics=pics,
     framesets=framesets,
   }
+
+  buildPicAndFrameset(stuff, "maya_trans.png", "maya", "fl.stand.1")
+
+  buildPicAndFrameset(stuff, "freya_trans.png", "freya", "fl.stand.1")
 
   buildPicsAndFramesets(stuff, "tshirt_guy.png",
     "tshirt_guy", {
@@ -74,6 +98,8 @@ Pics.load = function()
     {'br.walk.2', {390,543, 50,100}},
   })
 
+  -- print(tdebug(pics))
+  -- print(tdebug(framesets))
   return stuff
 end
 
