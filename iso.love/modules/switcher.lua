@@ -1,6 +1,7 @@
 local Newui = require 'modules/newui'
 local Editor = require 'modules/editor'
 local Animtest = require 'modules/animtest'
+local EcsTest = require 'modules/ecstest'
 
 local function newModuleSub(module,key)
   local state = module.newWorld()
@@ -14,9 +15,10 @@ local function newWorld(opts)
       newui=newModuleSub(Newui,"f1"),
       editor=newModuleSub(Editor,"f2"),
       animtest=newModuleSub(Animtest,"f3"),
+      ecstest=newModuleSub(EcsTest,"f4"),
     },
   }
-  model.current = opts.current or "animtest"
+  model.current = opts.current or "ecstest"
   return model
 end
 
