@@ -1,4 +1,5 @@
 local Iso = require 'iso'
+local IsoDebug = require 'isodebug'
 local Colors = require 'colors'
 local Estore = require 'ecs/estore'
 require 'ecs/ecshelpers'
@@ -15,48 +16,48 @@ CHEAT.isoSprites = {
   maya1= {
     id="maya1",
     image={name=Maya, offx=38, offy=114, width=68, height=106},
-    offp={x=0.5, y=0.5, z=0},
+    offset={x=0.3, y=0.3, z=0},
     size={x=0.6, y=0.6, z=1.55},
   },
   freya1= {
     id="freya1",
     image={name=Freya, offx=38, offy=114, width=68, height=106},
-    offp={x=0.5, y=0.5, z=0},
+    offset={x=0.35, y=0.3, z=0},
     size={x=0.7, y=0.6, z=1.55},
   },
   blockRed = {
     id="blockRed",
-    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
     color=Colors.Red,
-    offp={x=0, y=0, z=0},
+    offset={x=0, y=0, z=0},
     size={x=1, y=1, z=1},
   },
   blockBlue = {
     id="blockBlue",
-    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
     color=Colors.Blue,
-    offp={x=0, y=0, z=0},
+    offset={x=0, y=1, z=0},
     size={x=1, y=1, z=1},
   },
   blockGreen = {
     id="blockGreen",
-    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
     color=Colors.Green,
-    offp={x=0, y=0, z=0},
+    offset={x=0, y=0, z=0},
     size={x=1, y=1, z=1},
   },
   blockWhite = {
     id="blockWhite",
-    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
     color=Colors.White,
-    offp={x=0, y=0, z=0},
+    offset={x=0, y=0, z=0},
     size={x=1, y=1, z=1},
   },
   blockYellow = {
     id="blockYellow",
-    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
     color=Colors.Yellow,
-    offp={x=0, y=0, z=0},
+    offset={x=0, y=0, z=0},
     size={x=1, y=1, z=1},
   },
 }
@@ -80,63 +81,45 @@ local function setupEstore(estore, resources, opts)
   local isoWorld = estore:newEntity({
     {'isoworld',{}},
   })
+  -- isoWorld:newChild({
+  --   {'timer', {name="testme", countDown=false}},
+  -- })
   isoWorld:newChild({
-    {'timer', {name="testme", countDown=false}},
-  })
-  isoWorld:newChild({
-    {'iso',{}},
     {'isoSprite', {id='blockRed'}},
     {'isoPos', {x=0,y=0,z=0}},
   })
   isoWorld:newChild({
-    {'iso',{}},
     {'isoSprite', {id='blockYellow'}},
     {'isoPos', {x=1,y=0,z=0}},
   })
   isoWorld:newChild({
-    {'iso',{}},
     {'isoSprite', {id='blockGreen'}},
     {'isoPos', {x=1,y=-1,z=0}},
   })
   isoWorld:newChild({
-    {'iso',{}},
     {'isoSprite', {id='blockBlue'}},
-    {'isoPos', {x=0,y=-1,z=0}},
+    {'isoPos', {x=0,y=0,z=0}},
+    {'isoDebug', {on=false}},
   })
   isoWorld:newChild({
-    {'iso',{}},
     {'isoSprite', {id='maya1'}},
-    {'isoPos', {x=0,y=0,z=1}},
+    {'isoPos', {x=0.5,y=0.5,z=1}},
+    {'isoDebug', {on=false}},
   })
   isoWorld:newChild({
-    {'iso',{}},
     {'isoSprite', {id='freya1'}},
-    {'isoPos', {x=1,y=0,z=1}},
+    {'isoPos', {x=0.5,y=-0.5,z=1}},
   })
-  -- isoWorld:newChild({
-  --   {'iso',{}},
-  --   {'isoPos', {x=1,y=0,z=0}},
-  --   {'isoSize', {x=1,y=1,z=1}},
-  --   {'color', {color=Colors.Red}},
-  -- })
-  -- isoWorld:newChild({
-  --   {'iso',{}},
-  --   {'isoPos', {x=0,y=1,z=0}},
-  --   {'isoSize', {x=1,y=1,z=1}},
-  --   {'color', {color=Colors.White}},
-  -- })
-  -- isoWorld:newChild({
-  --   {'iso',{}},
-  --   {'isoPos', {x=1,y=1,z=0}},
-  --   {'isoSize', {x=1,y=1,z=1}},
-  --   {'color', {color=Colors.Yellow}},
-  -- })
-  -- isoWorld:newChild({
-  --   {'iso',{}},
-  --   {'isoPos', {x=1,y=1,z=1}},
-  --   {'isoSize', {x=1,y=1,z=1}},
-  --   {'color', {color=Colors.Green}},
-  -- })
+  isoWorld:newChild({
+    {'isoSprite', {id='maya1'}},
+    {'isoPos', {x=1.5,y=0.5,z=1}},
+    {'isoDebug', {on=false}},
+  })
+  isoWorld:newChild({
+    {'isoSprite', {id='freya1'}},
+    {'isoPos', {x=1.5,y=-0.5,z=1}},
+  })
+
 end
 
 local function updateEstore(world,action)
@@ -162,23 +145,7 @@ Updaters.mouse = function(world,action)
   return world,nil
 end
 
-local function newCubeSprite(pos,color)
-  local b = Iso.newSortable(pos, {x=1,y=1,z=1})
-  b.type = "sprite"
-  b.color = color or {255,255,255,255}
-  local img = CHEAT.images[BlenderCube96]
-  b.image = {
-    name = BlenderCube96,
-    offx = img:getWidth() / 2,
-    offy = img:getHeight(),
-    -- width = img:getWidth(),
-    -- height = img:getHeight(),
-  }
-  b.dbg = {}
-  return b
-end
-
-local function drawCubeSprite(block)
+local function drawSpriteBlock(block)
   local img = CHEAT.images[block.image.name]
   local x,y = Iso.spaceToScreen_(block.pos.x, block.pos.y, block.pos.z)
   love.graphics.setColor(block.color[1], block.color[2], block.color[3], block.color[4])
@@ -189,6 +156,27 @@ local function drawCubeSprite(block)
     1,1,                               -- scalex,scaley
     block.image.offx, block.image.offy -- xoff,yoff
   )
+  if block.debug then
+    -- Draw the x,y location as a white dot:
+    love.graphics.setPointSize(4)
+    love.graphics.setColor(255,255,255)
+    love.graphics.points(x,y)
+    love.graphics.setPointSize(1)
+
+    -- draw image bounds as a red rectangle:
+    love.graphics.setColor(255,100,100)
+    love.graphics.rectangle("line",x-block.image.offx,y-block.image.offy, block.image.width,block.image.height)
+
+    -- draw a transluscent cube around the sprite:
+    IsoDebug.drawBlock(block,{255,255,255,100})
+
+    -- draw "real" position of sprite as a yellow dot:
+    -- love.graphics.setPointSize(4)
+    -- love.graphics.setColor(255,255,0,180)
+    -- local sloc = Iso.offsetPos(block)
+    -- local slx,sly = Iso.spaceToScreen_(block.pos.x-sloc.x, block.pos.y-sloc.y, block.pos.z-sloc.z) love.graphics.points(slx,sly)
+
+  end
   love.graphics.setColor(255,255,255,255)
 end
 
@@ -210,10 +198,10 @@ local function getIsoPos(e)
   end
 end
 
-local function applyOffset(isoPos, offp)
-  isoPos.x = isoPos.x - offp.x
-  isoPos.y = isoPos.y - offp.y
-  isoPos.z = isoPos.z - offp.z
+local function applyOffset(isoPos, offset)
+  isoPos.x = isoPos.x - offset.x
+  isoPos.y = isoPos.y - offset.y
+  isoPos.z = isoPos.z - offset.z
   return isoPos
 end
 
@@ -237,7 +225,11 @@ local function updateCachedBlock(block,e)
       height = sprite.image.height,
     }
   end
-  block.pos = applyOffset(getIsoPos(e), block.sprite.offp)
+  block.debug = false
+  if e.isoDebug and e.isoDebug.on then
+    block.debug = true
+  end
+  block.pos = applyOffset(getIsoPos(e), block.sprite.offset)
   return block
 end
 
@@ -251,7 +243,7 @@ local function drawIsoWorld(isoWorldEnt, estore, resources)
   local saw = {}
   local cache = CHEAT.blockCache
   -- Find entities to draw:
-  estore:walkEntity(isoWorldEnt, hasComps('iso'),function(e)
+  estore:walkEntity(isoWorldEnt, hasComps('isoSprite'),function(e)
     table.insert(saw, e.eid)
     if cache[e.eid] then
       -- UPDATE CACHED BLOCK
@@ -281,9 +273,17 @@ local function drawIsoWorld(isoWorldEnt, estore, resources)
   love.graphics.push()
   love.graphics.translate(400,400)
   for i=1,#CHEAT.blocks do
-    drawCubeSprite(CHEAT.blocks[i])
+    drawSpriteBlock(CHEAT.blocks[i])
   end
+
+
   love.graphics.pop()
+  -- Draw origin
+  -- love.graphics.setPointSize(4,4)
+  -- love.graphics.setColor(0,0,255)
+  -- love.graphics.points(400,400)
+  -- love.graphics.setColor(255,255,255)
+
 
   -- XXX: debugging only
   estore:walkEntity(isoWorldEnt, hasComps('timer'),function(e)
@@ -312,11 +312,6 @@ local function newWorld(opts)
 
   CHEAT.blocks={} -- list
   CHEAT.blockCache={} -- map
-  -- table.insert(CHEAT.blocks, newCubeSprite({x=0,y=0,z=0}, Colors.Blue))
-  -- table.insert(CHEAT.blocks, newCubeSprite({x=1,y=0,z=0}, Colors.Red))
-  -- table.insert(CHEAT.blocks, newCubeSprite({x=0,y=0,z=-1}, Colors.White))
-
-
   return model
 end
 
