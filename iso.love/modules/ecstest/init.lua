@@ -27,6 +27,35 @@ CHEAT.isoSprites = {
   blockRed = {
     id="blockRed",
     image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    color=Colors.Red,
+    offp={x=0, y=0, z=0},
+    size={x=1, y=1, z=1},
+  },
+  blockBlue = {
+    id="blockBlue",
+    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    color=Colors.Blue,
+    offp={x=0, y=0, z=0},
+    size={x=1, y=1, z=1},
+  },
+  blockGreen = {
+    id="blockGreen",
+    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    color=Colors.Green,
+    offp={x=0, y=0, z=0},
+    size={x=1, y=1, z=1},
+  },
+  blockWhite = {
+    id="blockWhite",
+    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    color=Colors.White,
+    offp={x=0, y=0, z=0},
+    size={x=1, y=1, z=1},
+  },
+  blockYellow = {
+    id="blockYellow",
+    image={name=BlenderCube96, offx=38, offy=114, width=96, height=128},
+    color=Colors.Yellow,
     offp={x=0, y=0, z=0},
     size={x=1, y=1, z=1},
   },
@@ -61,8 +90,22 @@ local function setupEstore(estore, resources, opts)
   })
   isoWorld:newChild({
     {'iso',{}},
+    {'isoSprite', {id='blockYellow'}},
+    {'isoPos', {x=1,y=0,z=0}},
+  })
+  isoWorld:newChild({
+    {'iso',{}},
+    {'isoSprite', {id='blockGreen'}},
+    {'isoPos', {x=1,y=-1,z=0}},
+  })
+  isoWorld:newChild({
+    {'iso',{}},
+    {'isoSprite', {id='blockBlue'}},
+    {'isoPos', {x=0,y=-1,z=0}},
+  })
+  isoWorld:newChild({
+    {'iso',{}},
     {'isoSprite', {id='maya1'}},
-    -- {'isoPos', {x=0.5,y=0.5,z=1}},
     {'isoPos', {x=0,y=0,z=1}},
   })
   isoWorld:newChild({
