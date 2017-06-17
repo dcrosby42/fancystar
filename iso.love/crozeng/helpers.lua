@@ -220,6 +220,12 @@ function tfindallby(t,key,val)
   return res
 end
 
+function lcontains(list, item)
+  for i=1,#list do
+    if list[i] == item then return true end
+  end
+  return false
+end
 function lfind(list, fn)
   for i=1,#list do
     if fn(list[i],i) == true then

@@ -37,15 +37,22 @@ local function defaultSil()
   return {x={0,0},y={0,0},h={0,0}}
 end
 
-local function newBlock(pos,size,color,name)
+local function newSortable(pos,size)
   return {
-    type="block",
-    name=name,
     pos=pos,
     size=size,
-    color=color,
     sil=defaultSil(),
+    blocksInFront={},
+    blocksBehind={},
   }
+end
+
+local function newBlock(pos,size,color,name)
+  local b = newSortable(pos,size)
+  b.type = "block"
+  b.name = name
+  b.color = color
+  return b
 end
 
 -- (Re)calculate a block's virtual silhouette and store in block.sil
@@ -215,6 +222,7 @@ end
 
 Iso.sortBlocks = sortBlocks
 Iso.newBlock = newBlock
+Iso.newSortable = newSortable
 Iso.spaceToScreen = spaceToScreen
 Iso.spaceToScreen_ = spaceToScreen_
 Iso.blocksOverlap = blocksOverlap
