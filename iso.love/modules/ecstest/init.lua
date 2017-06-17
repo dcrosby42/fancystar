@@ -104,7 +104,7 @@ local function setupEstore(estore, resources, opts)
   isoWorld:newChild({
     {'isoSprite', {id='maya1'}},
     {'isoPos', {x=0.5,y=0.5,z=1}},
-    {'isoDebug', {on=false}},
+    {'isoDebug', {on=true}},
   })
   isoWorld:newChild({
     {'isoSprite', {id='freya1'}},
@@ -156,12 +156,11 @@ local function drawSpriteBlock(block)
     1,1,                               -- scalex,scaley
     block.image.offx, block.image.offy -- xoff,yoff
   )
-  if block.debug then
+  if block.debug.on then
     -- Draw the x,y location as a white dot:
-    love.graphics.setPointSize(4)
-    love.graphics.setColor(255,255,255)
-    love.graphics.points(x,y)
-    love.graphics.setPointSize(1)
+    -- love.graphics.setPointSize(4)
+    -- love.graphics.setColor(255,255,255)
+    -- love.graphics.points(x,y)
 
     -- draw image bounds as a red rectangle:
     love.graphics.setColor(255,100,100)
@@ -171,11 +170,13 @@ local function drawSpriteBlock(block)
     IsoDebug.drawBlock(block,{255,255,255,100})
 
     -- draw "real" position of sprite as a yellow dot:
-    -- love.graphics.setPointSize(4)
-    -- love.graphics.setColor(255,255,0,180)
-    -- local sloc = Iso.offsetPos(block)
+    local sx,sy = Iso.spaceToScreen_(block.debug.spritePos.x, block.debug.spritePos.y, block.debug.spritePos.z)
+    love.graphics.setPointSize(4)
+    love.graphics.setColor(255,255,0,180)
+    love.graphics.points(sx,sy)
     -- local slx,sly = Iso.spaceToScreen_(block.pos.x-sloc.x, block.pos.y-sloc.y, block.pos.z-sloc.z) love.graphics.points(slx,sly)
 
+    love.graphics.setPointSize(1)
   end
   love.graphics.setColor(255,255,255,255)
 end
@@ -225,17 +226,23 @@ local function updateCachedBlock(block,e)
       height = sprite.image.height,
     }
   end
-  block.debug = false
   if e.isoDebug and e.isoDebug.on then
-    block.debug = true
+    block.debug.on = true
   end
   block.pos = applyOffset(getIsoPos(e), block.sprite.offset)
+  if e.isoDebug and e.isoDebug.on then
+    block.debug.on = true
+    block.debug.spritePos = getIsoPos(e)
+  else
+    block.debug.on = false
+  end
   return block
 end
 
 local function newCachedBlock(e)
   local block = Iso.newSortable()
   block.type = "spriteEntityBlock" -- not used?
+  block.debug = {on=false}
   return block
 end
 
@@ -252,7 +259,6 @@ local function drawIsoWorld(isoWorldEnt, estore, resources)
       -- ADD NEW CACHED BLOCK
       cache[e.eid] = updateCachedBlock(newCachedBlock(e), e)
       local bl = cache[e.eid]
-      print("new cached block "..e.eid..": "..tdebug(bl.image))
     end
   end)
 
