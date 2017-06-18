@@ -1,6 +1,7 @@
 local Iso = require 'iso'
 local IsoDebug = require 'isodebug'
 local Colors = require 'colors'
+local Pics = require 'data.pics'
 local Estore = require 'ecs/estore'
 require 'ecs/ecshelpers'
 local timerSystem = require 'systems/timer'
@@ -15,47 +16,54 @@ local Freya = "assets/images/freya_trans.png"
 CHEAT.isoSprites = {
   maya1= {
     id="maya1",
-    image={name=Maya, offx=38, offy=114, width=68, height=106},
+    -- image={name=Maya, offx=38, offy=114, width=68, height=106},
+    frameset='maya',
     offset={x=0.3, y=0.3, z=0},
     size={x=0.6, y=0.6, z=1.55},
   },
   freya1= {
     id="freya1",
-    image={name=Freya, offx=38, offy=114, width=68, height=106},
+    -- image={name=Freya, offx=38, offy=114, width=68, height=106},
+    frameset='freya',
     offset={x=0.35, y=0.3, z=0},
     size={x=0.7, y=0.6, z=1.55},
   },
   blockRed = {
     id="blockRed",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    -- image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    frameset='blenderCube',
     color=Colors.Red,
     offset={x=0, y=0, z=0},
     size={x=1, y=1, z=1},
   },
   blockBlue = {
     id="blockBlue",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    -- image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    frameset='blenderCube',
     color=Colors.Blue,
     offset={x=0, y=1, z=0},
     size={x=1, y=1, z=1},
   },
   blockGreen = {
     id="blockGreen",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    -- image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    frameset='blenderCube',
     color=Colors.Green,
     offset={x=0, y=0, z=0},
     size={x=1, y=1, z=1},
   },
   blockWhite = {
     id="blockWhite",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    -- image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    frameset='blenderCube',
     color=Colors.White,
     offset={x=0, y=0, z=0},
     size={x=1, y=1, z=1},
   },
   blockYellow = {
     id="blockYellow",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    -- image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
+    frameset='blenderCube',
     color=Colors.Yellow,
     offset={x=0, y=0, z=0},
     size={x=1, y=1, z=1},
@@ -102,21 +110,21 @@ local function setupEstore(estore, resources, opts)
     {'isoDebug', {on=false}},
   })
   isoWorld:newChild({
-    {'isoSprite', {id='maya1'}},
+    {'isoSprite', {id='maya1', dir='fl', action='stand', frame=1}},
     {'isoPos', {x=0.5,y=0.5,z=1}},
     {'isoDebug', {on=true}},
   })
   isoWorld:newChild({
-    {'isoSprite', {id='freya1'}},
+    {'isoSprite', {id='freya1', dir='fl', action='stand', frame=1}},
     {'isoPos', {x=0.5,y=-0.5,z=1}},
   })
   isoWorld:newChild({
-    {'isoSprite', {id='maya1'}},
+    {'isoSprite', {id='maya1', dir='fl', action='stand', frame=1}},
     {'isoPos', {x=1.5,y=0.5,z=1}},
     {'isoDebug', {on=false}},
   })
   isoWorld:newChild({
-    {'isoSprite', {id='freya1'}},
+    {'isoSprite', {id='freya1', dir='fl', action='stand', frame=1}},
     {'isoPos', {x=1.5,y=-0.5,z=1}},
   })
 
@@ -146,20 +154,23 @@ Updaters.mouse = function(world,action)
 end
 
 local function drawSpriteBlock(block)
-  local img = CHEAT.images[block.image.name]
+  -- local img = CHEAT.images[block.image.name]
   local x,y = Iso.spaceToScreen_(block.pos.x, block.pos.y, block.pos.z)
   love.graphics.setColor(block.color[1], block.color[2], block.color[3], block.color[4])
+  local pic = block.pic
   love.graphics.draw(
-    img,
+    pic.image,
+    pic.quad,
     x,y,
     0,                                 -- rotation
     1,1,                               -- scalex,scaley
-    block.image.offx, block.image.offy -- xoff,yoff
+    pic.offx, block.offy -- xoff,yoff
   )
+
   if block.debug.on then
     -- draw image bounds as a red rectangle:
     love.graphics.setColor(255,100,100)
-    love.graphics.rectangle("line",x-block.image.offx,y-block.image.offy, block.image.width,block.image.height)
+    love.graphics.rectangle("line",x-pic.offx,y-pic.offy, pic.rect.w, pic.rect.h)
 
     -- draw sprite box bounds as a transluscent cube
     IsoDebug.drawBlock(block,{255,255,255,100})
@@ -213,14 +224,19 @@ local function updateCachedBlock(block,e)
     else
       block.color = {255,255,255,255} -- white
     end
-    block.image = {
-      name = sprite.image.name,
-      offx = sprite.image.offx,
-      offy = sprite.image.offy,
-      width = sprite.image.width,
-      height = sprite.image.height,
-    }
+    -- block.image = {
+    --   name = sprite.image.name,
+    --   offx = sprite.image.offx,
+    --   offy = sprite.image.offy,
+    --   width = sprite.image.width,
+    --   height = sprite.image.height,
+    -- }
   end
+  -- print(block.spriteId.."---------------------------------------")
+  -- print(tdebug(CHEAT.picdata.framesets))
+  -- print(tdebug(e.isoSprite))
+  -- print("frameset: "..block.sprite.frameset)
+  block.pic = CHEAT.picdata.framesets[block.sprite.frameset][e.isoSprite.dir][e.isoSprite.action][e.isoSprite.frame]
   if e.isoDebug and e.isoDebug.on then
     block.debug.on = true
   end
@@ -310,6 +326,8 @@ local function newWorld(opts)
   CHEAT.images[BlenderCube96] = love.graphics.newImage(BlenderCube96)
   CHEAT.images[Maya] = love.graphics.newImage(Maya)
   CHEAT.images[Freya] = love.graphics.newImage(Freya)
+
+  CHEAT.picdata = Pics.load()
 
   CHEAT.blocks={} -- list
   CHEAT.blockCache={} -- map

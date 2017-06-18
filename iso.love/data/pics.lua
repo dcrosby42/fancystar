@@ -14,7 +14,7 @@ end
 local function test()
 end
 
-local function buildPic(stuff, imgname,name,pathstr,rect)
+local function buildPic(stuff, imgname,name,pathstr,rect,off)
   local img = stuff.images[imgname]
   local x,y,w,h = unpack(rect or {})
   if x == nil then
@@ -25,10 +25,15 @@ local function buildPic(stuff, imgname,name,pathstr,rect)
     w = img:getWidth()
     h = img:getHeight()
   end
+  if off == nil then
+    off={offx=0,offy=0}
+  end
   local picname = name .. "." .. pathstr
   local pic = {
     image=img,
     name=picname,
+    offx=off.offx,
+    offy=off.offy,
     quad=love.graphics.newQuad(x, y, w, h, img:getDimensions()),
     rect={x=x,y=y,w=w,h=h},
   }
@@ -48,8 +53,8 @@ local function updateFrameset(stuff, name, pathstr, pic)
   return frameset
 end
 
-local function buildPicAndFrameset(stuff,imgname,name,pathstr,rect)
-  local pic = buildPic(stuff,imgname,name,pathstr,rect)
+local function buildPicAndFrameset(stuff,imgname,name,pathstr,rect,off)
+  local pic = buildPic(stuff,imgname,name,pathstr,rect,off)
   frameset = updateFrameset(stuff,name,pathstr,pic)
 end
 
@@ -71,9 +76,11 @@ Pics.load = function()
     framesets=framesets,
   }
 
-  buildPicAndFrameset(stuff, "maya_trans.png", "maya", "fl.stand.1")
+  buildPicAndFrameset(stuff, "maya_trans.png", "maya", "fl.stand.1", nil, {offx=38, offy=114})
 
-  buildPicAndFrameset(stuff, "freya_trans.png", "freya", "fl.stand.1")
+  buildPicAndFrameset(stuff, "freya_trans.png", "freya", "fl.stand.1",nil, {offx=38, offy=114})
+
+  buildPicAndFrameset(stuff, "blender_cube_96.png", "blenderCube", "default.default.1",nil, nil)
 
   buildPicsAndFramesets(stuff, "tshirt_guy.png",
     "tshirt_guy", {
