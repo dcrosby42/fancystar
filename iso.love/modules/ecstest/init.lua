@@ -7,60 +7,16 @@ local timerSystem = require 'systems/timer'
 
 local Comps = require 'comps'
 
+local Pics = require 'data.pics'
+local Sprites = require 'data.sprites'
+
 local CHEAT = {}
 local BlenderCube96 = "assets/images/blender_cube_96.png" -- 96x128
 local Maya = "assets/images/maya_trans.png"
 local Freya = "assets/images/freya_trans.png"
 
-CHEAT.isoSprites = {
-  maya1= {
-    id="maya1",
-    image={name=Maya, offx=38, offy=114, width=68, height=106},
-    offset={x=0.3, y=0.3, z=0},
-    size={x=0.6, y=0.6, z=1.55},
-  },
-  freya1= {
-    id="freya1",
-    image={name=Freya, offx=38, offy=114, width=68, height=106},
-    offset={x=0.35, y=0.3, z=0},
-    size={x=0.7, y=0.6, z=1.55},
-  },
-  blockRed = {
-    id="blockRed",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
-    color=Colors.Red,
-    offset={x=0, y=0, z=0},
-    size={x=1, y=1, z=1},
-  },
-  blockBlue = {
-    id="blockBlue",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
-    color=Colors.Blue,
-    offset={x=0, y=1, z=0},
-    size={x=1, y=1, z=1},
-  },
-  blockGreen = {
-    id="blockGreen",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
-    color=Colors.Green,
-    offset={x=0, y=0, z=0},
-    size={x=1, y=1, z=1},
-  },
-  blockWhite = {
-    id="blockWhite",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
-    color=Colors.White,
-    offset={x=0, y=0, z=0},
-    size={x=1, y=1, z=1},
-  },
-  blockYellow = {
-    id="blockYellow",
-    image={name=BlenderCube96, offx=48, offy=128, width=96, height=128},
-    color=Colors.Yellow,
-    offset={x=0, y=0, z=0},
-    size={x=1, y=1, z=1},
-  },
-}
+-- f(bundle, pose, dir, time) -> pic
+
 
 local Updaters = {}
 
@@ -85,38 +41,45 @@ local function setupEstore(estore, resources, opts)
   --   {'timer', {name="testme", countDown=false}},
   -- })
   isoWorld:newChild({
-    {'isoSprite', {id='blockRed'}},
+    {'isoSprite', {id='blockRed', picname="blender_cube_96"}},
     {'isoPos', {x=0,y=0,z=0}},
   })
   isoWorld:newChild({
-    {'isoSprite', {id='blockYellow'}},
+    {'isoSprite', {id='blockYellow', picname="blender_cube_96"}},
     {'isoPos', {x=1,y=0,z=0}},
   })
   isoWorld:newChild({
-    {'isoSprite', {id='blockGreen'}},
+    {'isoSprite', {id='blockGreen', picname="blender_cube_96"}},
     {'isoPos', {x=1,y=-1,z=0}},
   })
   isoWorld:newChild({
-    {'isoSprite', {id='blockBlue'}},
+    {'isoSprite', {id='blockBlue', picname="blender_cube_96"}},
     {'isoPos', {x=0,y=0,z=0}},
     {'isoDebug', {on=false}},
   })
+
+  -- isoWorld:newChild({
+  --   {'isoSprite', {id='maya1', picname="maya.fl.stand.1"}},
+  --   {'isoPos', {x=0.5,y=0.5,z=1}},
+  --   {'isoDebug', {on=true}},
+  -- })
+
   isoWorld:newChild({
-    {'isoSprite', {id='maya1'}},
+    {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.2"}},
     {'isoPos', {x=0.5,y=0.5,z=1}},
     {'isoDebug', {on=true}},
   })
+
+  -- isoWorld:newChild({
+  --   {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
+  --   {'isoPos', {x=0.5,y=-0.5,z=1}},
+  -- })
+  -- isoWorld:newChild({
+  --   {'isoSprite', {id='maya1', picname="maya.fl.stand.1"}},
+  --   {'isoPos', {x=1.5,y=0.5,z=1}},
+  -- })
   isoWorld:newChild({
-    {'isoSprite', {id='freya1'}},
-    {'isoPos', {x=0.5,y=-0.5,z=1}},
-  })
-  isoWorld:newChild({
-    {'isoSprite', {id='maya1'}},
-    {'isoPos', {x=1.5,y=0.5,z=1}},
-    {'isoDebug', {on=false}},
-  })
-  isoWorld:newChild({
-    {'isoSprite', {id='freya1'}},
+    {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
     {'isoPos', {x=1.5,y=-0.5,z=1}},
   })
 
@@ -146,20 +109,21 @@ Updaters.mouse = function(world,action)
 end
 
 local function drawSpriteBlock(block)
-  local img = CHEAT.images[block.image.name]
+  local pic = CHEAT.picdata.pics[block.picref.name]
   local x,y = Iso.spaceToScreen_(block.pos.x, block.pos.y, block.pos.z)
   love.graphics.setColor(block.color[1], block.color[2], block.color[3], block.color[4])
   love.graphics.draw(
-    img,
+    pic.image,
+    pic.quad,
     x,y,
     0,                                 -- rotation
     1,1,                               -- scalex,scaley
-    block.image.offx, block.image.offy -- xoff,yoff
+    block.picref.offx, block.picref.offy -- xoff,yoff
   )
   if block.debug.on then
     -- draw image bounds as a red rectangle:
     love.graphics.setColor(255,100,100)
-    love.graphics.rectangle("line",x-block.image.offx,y-block.image.offy, block.image.width,block.image.height)
+    love.graphics.rectangle("line",x-block.picref.offx,y-block.picref.offy, block.picref.width,block.picref.height)
 
     -- draw sprite box bounds as a transluscent cube
     IsoDebug.drawBlock(block,{255,255,255,100})
@@ -213,12 +177,13 @@ local function updateCachedBlock(block,e)
     else
       block.color = {255,255,255,255} -- white
     end
-    block.image = {
-      name = sprite.image.name,
-      offx = sprite.image.offx,
-      offy = sprite.image.offy,
-      width = sprite.image.width,
-      height = sprite.image.height,
+    local pic = CHEAT.picdata.pics[e.isoSprite.picname]
+    block.picref = {
+      name = e.isoSprite.picname,
+      offx = sprite.imageOffset.x,
+      offy = sprite.imageOffset.y,
+      width = pic.rect.w,
+      height = pic.rect.h,
     }
   end
   if e.isoDebug and e.isoDebug.on then
@@ -313,6 +278,9 @@ local function newWorld(opts)
 
   CHEAT.blocks={} -- list
   CHEAT.blockCache={} -- map
+
+  CHEAT.picdata = Pics.load()
+  CHEAT.isoSprites = Sprites.load()
   return model
 end
 

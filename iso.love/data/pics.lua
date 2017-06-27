@@ -25,7 +25,10 @@ local function buildPic(stuff, imgname,name,pathstr,rect)
     w = img:getWidth()
     h = img:getHeight()
   end
-  local picname = name .. "." .. pathstr
+  local picname = name
+  if pathstr ~= nil and pathstr ~= '' then
+    picname = picname .. "." .. pathstr
+  end
   local pic = {
     image=img,
     name=picname,
@@ -75,6 +78,8 @@ Pics.load = function()
 
   buildPicAndFrameset(stuff, "freya_trans.png", "freya", "fl.stand.1")
 
+  buildPic(stuff,"blender_cube_96.png","blender_cube_96",nil,nil)
+
   buildPicsAndFramesets(stuff, "tshirt_guy.png",
     "tshirt_guy", {
     {'fl.stand.1', {104,158, 50,100}},
@@ -98,7 +103,7 @@ Pics.load = function()
     {'br.walk.2', {390,543, 50,100}},
   })
 
-  -- print(tdebug(pics))
+  print(tdebug(pics))
   -- print(tdebug(framesets))
   return stuff
 end
