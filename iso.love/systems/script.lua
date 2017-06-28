@@ -12,7 +12,7 @@ local context = {
 
 return defineUpdateSystem(hasComps('script'), function(e,estore,input,res)
   if e.script.on == 'tick' then
-    local scriptFunc = res.scripts[e.script.script]
+    local scriptFunc = res.scripts[e.script.scriptName]
     if scriptFunc then
       context.script = script
       context.entity = e
@@ -21,6 +21,8 @@ return defineUpdateSystem(hasComps('script'), function(e,estore,input,res)
       context.res = res
       context.args = {}
       scriptFunc(context)
+    else
+      print("ScriptSystem: entity "..e.eid.."scriptName '"..e.script.scriptName.."' is not registered")
     end
   end
 end)

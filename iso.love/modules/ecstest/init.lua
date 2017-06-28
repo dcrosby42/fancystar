@@ -4,11 +4,14 @@ local Colors = require 'colors'
 local Estore = require 'ecs/estore'
 require 'ecs/ecshelpers'
 local timerSystem = require 'systems/timer'
+local scriptSystem = require 'systems/script'
 
 local Comps = require 'comps'
 
 local Pics = require 'data.pics'
 local Sprites = require 'data.sprites'
+
+local Resources = require 'modules.ecstest.resources'
 
 local CHEAT = {}
 local BlenderCube96 = "assets/images/blender_cube_96.png" -- 96x128
@@ -25,7 +28,7 @@ local RunSystems = iterateFuncs({
   timerSystem,
   -- selfDestructSystem,
   -- controllerSystem,
-  -- scriptSystem,
+  scriptSystem,
   -- avatarControlSystem,
   -- moverSystem,
   -- animSystem,
@@ -65,9 +68,15 @@ local function setupEstore(estore, resources, opts)
   -- })
 
   isoWorld:newChild({
-    {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.2"}},
+    -- {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.2"}},
+    {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fr.walk.1"}},
     {'isoPos', {x=0.5,y=0.5,z=1}},
-    {'isoDebug', {on=true}},
+    -- {'isoDebug', {on=true}},
+    {'timer', {name='rotate', t=1, loop=true, reset=1}},
+    {'timer', {name='animate', loop=true, reset=0.15}},
+    {'timer', {name='animation', countDown=false}},
+    -- {'script', {scriptName='rotateTshirtGuy', on='tick'}}
+    {'script', {scriptName='walkFR', on='tick'}}
   })
 
   -- isoWorld:newChild({
@@ -109,7 +118,8 @@ Updaters.mouse = function(world,action)
 end
 
 local function drawSpriteBlock(block)
-  local pic = CHEAT.picdata.pics[block.picref.name]
+  -- local pic = CHEAT.picdata.pics[block.picname]
+  local pic = block.pic
   local x,y = Iso.spaceToScreen_(block.pos.x, block.pos.y, block.pos.z)
   love.graphics.setColor(block.color[1], block.color[2], block.color[3], block.color[4])
   love.graphics.draw(
@@ -118,12 +128,12 @@ local function drawSpriteBlock(block)
     x,y,
     0,                                 -- rotation
     1,1,                               -- scalex,scaley
-    block.picref.offx, block.picref.offy -- xoff,yoff
+    block.imageOffset.x, block.imageOffset.y -- xoff,yoff
   )
   if block.debug.on then
     -- draw image bounds as a red rectangle:
     love.graphics.setColor(255,100,100)
-    love.graphics.rectangle("line",x-block.picref.offx,y-block.picref.offy, block.picref.width,block.picref.height)
+    love.graphics.rectangle("line", x - block.imageOffset.x, y - block.imageOffset.y, block.pic.rect.w, block.pic.rect.h)
 
     -- draw sprite box bounds as a transluscent cube
     IsoDebug.drawBlock(block,{255,255,255,100})
@@ -170,26 +180,35 @@ local function updateCachedBlock(block,e)
   if block.spriteId ~= e.isoSprite.id then
     block.spriteId = e.isoSprite.id
     local sprite = CHEAT.isoSprites[block.spriteId]
-    block.sprite = sprite
+    assert(sprite, "No sprite for block.spriteId="..block.spriteId)
+    block.spriteOffset = sprite.offset
     block.size = sprite.size
     if sprite.color then
       block.color = sprite.color
     else
       block.color = {255,255,255,255} -- white
     end
-    local pic = CHEAT.picdata.pics[e.isoSprite.picname]
-    block.picref = {
-      name = e.isoSprite.picname,
-      offx = sprite.imageOffset.x,
-      offy = sprite.imageOffset.y,
-      width = pic.rect.w,
-      height = pic.rect.h,
-    }
+    block.imageOffset = sprite.imageOffset
+    block.picname = ""
+    block.pic = {}
+  end
+  if block.picname ~= e.isoSprite.picname then
+    block.picname = e.isoSprite.picname
+    block.pic = CHEAT.picdata.pics[e.isoSprite.picname]
+    assert(block.pic, "No sprite for block.picname="..block.picname)
+    -- local pic = CHEAT.picdata.pics[e.isoSprite.picname]
+    -- block.picref = {
+    --   name = e.isoSprite.picname,
+    --   offx = sprite.imageOffset.x,
+    --   offy = sprite.imageOffset.y,
+    --   width = pic.rect.w,
+    --   height = pic.rect.h,
+    -- }
   end
   if e.isoDebug and e.isoDebug.on then
     block.debug.on = true
   end
-  block.pos = applyOffset(getIsoPos(e), block.sprite.offset)
+  block.pos = applyOffset(getIsoPos(e), block.spriteOffset)
   if e.isoDebug and e.isoDebug.on then
     block.debug.on = true
     block.debug.spritePos = getIsoPos(e)
@@ -266,7 +285,7 @@ local function newWorld(opts)
   local model = {}
 
   model.estore = Estore:new()
-  model.resources = {}
+  model.resources = Resources
   model.input = {dt=0, events={}}
 
   setupEstore(model.estore, model.resources, opts)
