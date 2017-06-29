@@ -69,14 +69,15 @@ local function setupEstore(estore, resources, opts)
 
   isoWorld:newChild({
     -- {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.2"}},
-    {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fr.walk.1"}},
+    {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fr.walk.1", dir="fr", action="walk"}},
     {'isoPos', {x=0.5,y=0.5,z=1}},
     -- {'isoDebug', {on=true}},
     {'timer', {name='rotate', t=1, loop=true, reset=1}},
     {'timer', {name='animate', loop=true, reset=0.15}},
     {'timer', {name='animation', countDown=false}},
     -- {'script', {scriptName='rotateTshirtGuy', on='tick'}}
-    {'script', {scriptName='walkFR', on='tick'}}
+    -- {'script', {scriptName='walkFR', on='tick'}}
+    {'script', {scriptName='doTheAnim', on='tick'}}
   })
 
   -- isoWorld:newChild({
@@ -175,11 +176,12 @@ local function applyOffset(isoPos, offset)
   return isoPos
 end
 
-local function updateCachedBlock(block,e)
+local function updateCachedBlock(block,e,resources)
   block.entity = e -- ?.  reset this just in case the Entity object is actually a new Lua table
   if block.spriteId ~= e.isoSprite.id then
     block.spriteId = e.isoSprite.id
-    local sprite = CHEAT.isoSprites[block.spriteId]
+    -- local sprite = CHEAT.isoSprites[block.spriteId]
+    local sprite = resources.sprites[block.spriteId]
     assert(sprite, "No sprite for block.spriteId="..block.spriteId)
     block.spriteOffset = sprite.offset
     block.size = sprite.size
@@ -233,10 +235,10 @@ local function drawIsoWorld(isoWorldEnt, estore, resources)
     table.insert(saw, e.eid)
     if cache[e.eid] then
       -- UPDATE CACHED BLOCK
-      updateCachedBlock(cache[e.eid], e)
+      updateCachedBlock(cache[e.eid], e, resources)
     else
       -- ADD NEW CACHED BLOCK
-      cache[e.eid] = updateCachedBlock(newCachedBlock(e), e)
+      cache[e.eid] = updateCachedBlock(newCachedBlock(e), e, resources)
       local bl = cache[e.eid]
     end
   end)
@@ -285,7 +287,7 @@ local function newWorld(opts)
   local model = {}
 
   model.estore = Estore:new()
-  model.resources = Resources
+  model.resources = Resources.load()
   model.input = {dt=0, events={}}
 
   setupEstore(model.estore, model.resources, opts)
@@ -299,7 +301,7 @@ local function newWorld(opts)
   CHEAT.blockCache={} -- map
 
   CHEAT.picdata = Pics.load()
-  CHEAT.isoSprites = Sprites.load()
+  -- CHEAT.isoSprites = Sprites.load()
   return model
 end
 

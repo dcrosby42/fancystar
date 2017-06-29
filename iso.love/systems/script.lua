@@ -6,19 +6,19 @@ local context = {
   entity='',
   estore='',
   input='',
-  res='',
+  resources='',
   args={},
 }
 
-return defineUpdateSystem(hasComps('script'), function(e,estore,input,res)
+return defineUpdateSystem(hasComps('script'), function(e,estore,input,resources)
   if e.script.on == 'tick' then
-    local scriptFunc = res.scripts[e.script.scriptName]
+    local scriptFunc = resources.scripts[e.script.scriptName]
     if scriptFunc then
       context.script = script
       context.entity = e
       context.estore = estore
       context.input = input
-      context.res = res
+      context.resources = resources
       context.args = {}
       scriptFunc(context)
     else

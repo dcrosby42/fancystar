@@ -18,6 +18,32 @@ local function load()
       offset={x=0.3, y=0.3, z=0},
       size={x=0.6, y=0.6, z=1.55},
       imageOffset={x=24, y=108},
+      animBundle={
+        stand={
+          fr={reduce='flipbook', opts={
+            prefix="tshirt_guy.fr.stand.",
+            numFrames=1,
+            frameInterval=0.15,
+          }},
+          fl={reduce='flipbook', opts={
+            prefix="tshirt_guy.fl.stand.",
+            numFrames=1,
+            frameInterval=0.15,
+          }},
+        },
+        walk={
+          fr={reduce='flipbook', opts={
+            prefix="tshirt_guy.fr.walk.",
+            numFrames=2,
+            frameInterval=0.15,
+          }},
+          fl={reduce='flipbook', opts={
+            prefix="tshirt_guy.fl.walk.",
+            numFrames=2,
+            frameInterval=0.15,
+          }},
+        }
+      }
     },
     blockRed = {
       id="blockRed",
