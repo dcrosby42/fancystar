@@ -18,7 +18,13 @@ local BlenderCube96 = "assets/images/blender_cube_96.png" -- 96x128
 local Maya = "assets/images/maya_trans.png"
 local Freya = "assets/images/freya_trans.png"
 
--- f(bundle, pose, dir, time) -> pic
+local isoSpriteAnimSystem = defineUpdateSystem(hasComps('isoSprite','isoSpriteAnimated','timer'), function(e,estore,input,resources)
+  local timer = e.timers[e.isoSpriteAnimated.timer]
+  local spriteDef = resources.sprites[e.isoSprite.id]
+  if timer and spriteDef then
+    e.isoSprite.picname = spriteDef.animBundle.picNameAtTime(e.isoSprite.action, e.isoSprite.dir, timer.t)
+  end
+end)
 
 
 local Updaters = {}
@@ -29,6 +35,7 @@ local RunSystems = iterateFuncs({
   -- selfDestructSystem,
   -- controllerSystem,
   scriptSystem,
+  isoSpriteAnimSystem,
   -- avatarControlSystem,
   -- moverSystem,
   -- animSystem,
@@ -68,16 +75,12 @@ local function setupEstore(estore, resources, opts)
   -- })
 
   isoWorld:newChild({
-    -- {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.2"}},
-    {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fr.walk.1", dir="fr", action="walk"}},
     {'isoPos', {x=0.5,y=0.5,z=1}},
-    -- {'isoDebug', {on=true}},
-    {'timer', {name='rotate', t=1, loop=true, reset=1}},
-    {'timer', {name='animate', loop=true, reset=0.15}},
+    {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.1", dir="fr", action="walk"}},
+    {'isoSpriteAnimated', {timer='animation'}},
     {'timer', {name='animation', countDown=false}},
-    -- {'script', {scriptName='rotateTshirtGuy', on='tick'}}
-    -- {'script', {scriptName='walkFR', on='tick'}}
-    {'script', {scriptName='doTheAnim', on='tick'}}
+    -- {'isoDebug', {on=true}},
+    -- {'script', {scriptName='doTheAnim', on='tick'}}
   })
 
   -- isoWorld:newChild({

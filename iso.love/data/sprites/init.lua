@@ -19,6 +19,7 @@ local function load()
       size={x=0.6, y=0.6, z=1.55},
       imageOffset={x=24, y=108},
       animBundle={
+        fallbackPicname='tshirt_guy.fl.stand.1',
         stand={
           fr={reduce='flipbook', opts={
             prefix="tshirt_guy.fr.stand.",

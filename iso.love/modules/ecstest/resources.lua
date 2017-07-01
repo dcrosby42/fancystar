@@ -1,3 +1,6 @@
+local Scripts = require 'modules.ecstest.scripts'
+local Sprites = require('data.sprites')
+
 local R = {}
 
 local function mkTimeLookupFunc(data)
@@ -34,8 +37,19 @@ local function mkFlipbookAnimFunc(opts)
   return tlookup
 end
 
+local function mkActionDirPicnameLookup(animBundle)
+  return function(actionName, dirName, time)
+    if animBundle[actionName] and animBundle[actionName][dirName] and animBundle[actionName][dirName].picNameAtTime then
+      return animBundle[actionName][dirName].picNameAtTime(time)
+    else
+      return animBundle.fallbackPicname
+    end
+  end
+end
+
 local Reducers = {
-  flipbook=mkFlipbookAnimFunc
+  flipbook=mkFlipbookAnimFunc,
+  bundleActionDir=mkActionDirPicnameLookup,
 }
 
 -- Walk through all the sprites' animBundles and generate a picNameAtTime() func
@@ -43,20 +57,23 @@ local function reduceSpriteAnimBundles(sprites)
   for sid,sprite in pairs(sprites) do
     if sprite.animBundle then
       for actionName,dirs in pairs(sprite.animBundle) do
-        for dirName, animDef in pairs(dirs) do
-          local reducer = Reducers[animDef.reduce]
-          assert(reducer, "No animation reducer defined for '"..animDef.reduce.."'")
-          animDef.picNameAtTime = reducer(animDef.opts)
+        if type(dirs) == 'table' then
+          for dirName, animDef in pairs(dirs) do
+            local reducer = Reducers[animDef.reduce]
+            assert(reducer, "No animation reducer defined for '"..animDef.reduce.."'")
+            animDef.picNameAtTime = reducer(animDef.opts)
+          end
         end
       end
+      sprite.animBundle.picNameAtTime = Reducers.bundleActionDir(sprite.animBundle)
     end
   end
 end
 
 local function load()
   local r = {}
-  r.scripts = require 'modules.ecstest.scripts'
-  r.sprites = require('data.sprites').load()
+  r.scripts = Scripts
+  r.sprites = Sprites.load()
   reduceSpriteAnimBundles(r.sprites)
   return r
 end
