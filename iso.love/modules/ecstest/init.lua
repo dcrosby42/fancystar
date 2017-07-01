@@ -8,12 +8,9 @@ local scriptSystem = require 'systems/script'
 
 local Comps = require 'comps'
 
-local Pics = require 'data.pics'
-local Sprites = require 'data.sprites'
 
 local Resources = require 'modules.ecstest.resources'
 
-local CHEAT = {}
 local BlenderCube96 = "assets/images/blender_cube_96.png" -- 96x128
 local Maya = "assets/images/maya_trans.png"
 local Freya = "assets/images/freya_trans.png"
@@ -47,9 +44,7 @@ local function setupEstore(estore, resources, opts)
   local isoWorld = estore:newEntity({
     {'isoworld',{}},
   })
-  -- isoWorld:newChild({
-  --   {'timer', {name="testme", countDown=false}},
-  -- })
+
   isoWorld:newChild({
     {'isoSprite', {id='blockRed', picname="blender_cube_96"}},
     {'isoPos', {x=0,y=0,z=0}},
@@ -68,12 +63,6 @@ local function setupEstore(estore, resources, opts)
     {'isoDebug', {on=false}},
   })
 
-  -- isoWorld:newChild({
-  --   {'isoSprite', {id='maya1', picname="maya.fl.stand.1"}},
-  --   {'isoPos', {x=0.5,y=0.5,z=1}},
-  --   {'isoDebug', {on=true}},
-  -- })
-
   isoWorld:newChild({
     {'isoPos', {x=0.5,y=0.5,z=1}},
     {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.1", dir="fr", action="walk"}},
@@ -82,6 +71,13 @@ local function setupEstore(estore, resources, opts)
     -- {'isoDebug', {on=true}},
     -- {'script', {scriptName='doTheAnim', on='tick'}}
   })
+
+  -- isoWorld:newChild({
+  --   {'isoSprite', {id='maya1', picname="maya.fl.stand.1"}},
+  --   {'isoPos', {x=0.5,y=0.5,z=1}},
+  --   {'isoDebug', {on=true}},
+  -- })
+
 
   -- isoWorld:newChild({
   --   {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
@@ -122,7 +118,6 @@ Updaters.mouse = function(world,action)
 end
 
 local function drawSpriteBlock(block)
-  -- local pic = CHEAT.picdata.pics[block.picname]
   local pic = block.pic
   local x,y = Iso.spaceToScreen_(block.pos.x, block.pos.y, block.pos.z)
   love.graphics.setColor(block.color[1], block.color[2], block.color[3], block.color[4])
@@ -183,7 +178,6 @@ local function updateCachedBlock(block,e,resources)
   block.entity = e -- ?.  reset this just in case the Entity object is actually a new Lua table
   if block.spriteId ~= e.isoSprite.id then
     block.spriteId = e.isoSprite.id
-    -- local sprite = CHEAT.isoSprites[block.spriteId]
     local sprite = resources.sprites[block.spriteId]
     assert(sprite, "No sprite for block.spriteId="..block.spriteId)
     block.spriteOffset = sprite.offset
@@ -199,16 +193,8 @@ local function updateCachedBlock(block,e,resources)
   end
   if block.picname ~= e.isoSprite.picname then
     block.picname = e.isoSprite.picname
-    block.pic = CHEAT.picdata.pics[e.isoSprite.picname]
+    block.pic = resources.pics[e.isoSprite.picname]
     assert(block.pic, "No sprite for block.picname="..block.picname)
-    -- local pic = CHEAT.picdata.pics[e.isoSprite.picname]
-    -- block.picref = {
-    --   name = e.isoSprite.picname,
-    --   offx = sprite.imageOffset.x,
-    --   offy = sprite.imageOffset.y,
-    --   width = pic.rect.w,
-    --   height = pic.rect.h,
-    -- }
   end
   if e.isoDebug and e.isoDebug.on then
     block.debug.on = true
@@ -230,57 +216,43 @@ local function newCachedBlock(e)
   return block
 end
 
-local function drawIsoWorld(isoWorldEnt, estore, resources)
+local function drawIsoWorld(isoWorldEnt, estore, resources, blockCache)
   local saw = {}
-  local cache = CHEAT.blockCache
   -- Find entities to draw:
   estore:walkEntity(isoWorldEnt, hasComps('isoSprite'),function(e)
     table.insert(saw, e.eid)
-    if cache[e.eid] then
+    if blockCache[e.eid] then
       -- UPDATE CACHED BLOCK
-      updateCachedBlock(cache[e.eid], e, resources)
+      updateCachedBlock(blockCache[e.eid], e, resources)
     else
       -- ADD NEW CACHED BLOCK
-      cache[e.eid] = updateCachedBlock(newCachedBlock(e), e, resources)
-      local bl = cache[e.eid]
+      blockCache[e.eid] = updateCachedBlock(newCachedBlock(e), e, resources)
+      local bl = blockCache[e.eid]
     end
   end)
 
   local toSort = {}
   -- Filter out cached blocks that no longer correspond to an entity:
-  for eid,block in pairs(cache) do
+  for eid,block in pairs(blockCache) do
     if lcontains(saw,eid) then
       table.insert(toSort, block)
     else
       -- REMOVE CACHED BLOCK
-      cache[eid] = nil
+      blockCache[eid] = nil
     end
   end
-  CHEAT.blocks = Iso.sortBlocks(toSort)
+  local sortedBlocks = Iso.sortBlocks(toSort)
 
   -- TODO move this translation up?
   -- TODO use viewport component to determine translation
   love.graphics.push()
   love.graphics.translate(400,400)
-  for i=1,#CHEAT.blocks do
-    drawSpriteBlock(CHEAT.blocks[i])
+  for i=1,#sortedBlocks do
+    drawSpriteBlock(sortedBlocks[i])
   end
 
 
   love.graphics.pop()
-  -- Draw origin
-  -- love.graphics.setPointSize(4,4)
-  -- love.graphics.setColor(0,0,255)
-  -- love.graphics.points(400,400)
-  -- love.graphics.setColor(255,255,255)
-
-
-  -- XXX: debugging only
-  estore:walkEntity(isoWorldEnt, hasComps('timer'),function(e)
-    if e.timer.name == "testme" then
-      love.graphics.print("testme Timer: "..e.timer.t)
-    end
-  end)
 end
 
 --
@@ -288,23 +260,14 @@ end
 --
 local function newWorld(opts)
   local model = {}
-
   model.estore = Estore:new()
   model.resources = Resources.load()
   model.input = {dt=0, events={}}
 
+  model.caches = { blockCache={} }
+
   setupEstore(model.estore, model.resources, opts)
 
-  CHEAT.images={}
-  CHEAT.images[BlenderCube96] = love.graphics.newImage(BlenderCube96)
-  CHEAT.images[Maya] = love.graphics.newImage(Maya)
-  CHEAT.images[Freya] = love.graphics.newImage(Freya)
-
-  CHEAT.blocks={} -- list
-  CHEAT.blockCache={} -- map
-
-  CHEAT.picdata = Pics.load()
-  -- CHEAT.isoSprites = Sprites.load()
   return model
 end
 
@@ -321,14 +284,8 @@ local function drawWorld(world)
   love.graphics.setColor(255,255,255)
 
   world.estore:seekEntity(hasComps('isoworld'),function(e)
-    drawIsoWorld(e, world.estore, world.resources)
+    drawIsoWorld(e, world.estore, world.resources, world.caches.blockCache)
   end)
-
-  -- world.estore:walkEntities(hasComps('timer'),function(e)
-  --   if e.timer.name == "testme" then
-  --     love.graphics.print("testme Timer: "..e.timer.t)
-  --   end
-  -- end)
 end
 
 return {

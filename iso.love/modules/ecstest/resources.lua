@@ -1,5 +1,6 @@
 local Scripts = require 'modules.ecstest.scripts'
-local Sprites = require('data.sprites')
+local Sprites = require 'data.sprites'
+local Pics = require 'data.pics'
 
 local R = {}
 
@@ -74,6 +75,7 @@ local function load()
   local r = {}
   r.scripts = Scripts
   r.sprites = Sprites.load()
+  r.pics = Pics.load().pics
   reduceSpriteAnimBundles(r.sprites)
   return r
 end
