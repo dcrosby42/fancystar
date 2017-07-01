@@ -31,6 +31,16 @@ local function load()
             numFrames=1,
             frameInterval=0.15,
           }},
+          br={reduce='flipbook', opts={
+            prefix="tshirt_guy.br.stand.",
+            numFrames=1,
+            frameInterval=0.15,
+          }},
+          bl={reduce='flipbook', opts={
+            prefix="tshirt_guy.bl.stand.",
+            numFrames=1,
+            frameInterval=0.15,
+          }},
         },
         walk={
           fr={reduce='flipbook', opts={
@@ -40,6 +50,16 @@ local function load()
           }},
           fl={reduce='flipbook', opts={
             prefix="tshirt_guy.fl.walk.",
+            numFrames=2,
+            frameInterval=0.15,
+          }},
+          br={reduce='flipbook', opts={
+            prefix="tshirt_guy.br.walk.",
+            numFrames=2,
+            frameInterval=0.15,
+          }},
+          bl={reduce='flipbook', opts={
+            prefix="tshirt_guy.bl.walk.",
             numFrames=2,
             frameInterval=0.15,
           }},

@@ -134,11 +134,8 @@ end
 --
 -- INPUT EVENT HANDLERS
 --
--- NOTE: I reuse these template actions for "efficiency" however
--- this means RootModule.updateWorld must NOT store references to them. :(
--- TODO: just generate a new action structure each time to avoid potential errors.
-local keyboardAction = {type="keyboard", action='', key='', ctrl=false, lctrl=false, lctrl=false, shift=false, lshift=false, lshift=false,  gui=false, lgui=false, lgui=false}
 local function toKeyboardAction(state,key)
+  local keyboardAction = {type="keyboard", action='', key='', ctrl=false, lctrl=false, lctrl=false, shift=false, lshift=false, lshift=false,  gui=false, lgui=false, lgui=false}
   keyboardAction.state=state
   keyboardAction.key=key
   for _,mod in ipairs({"ctrl","shift","gui"}) do

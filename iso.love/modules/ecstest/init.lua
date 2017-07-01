@@ -1,15 +1,17 @@
 local Iso = require 'iso'
 local IsoDebug = require 'isodebug'
 local Colors = require 'colors'
-local Estore = require 'ecs/estore'
-require 'ecs/ecshelpers'
-local timerSystem = require 'systems/timer'
-local scriptSystem = require 'systems/script'
+local Estore = require 'ecs.estore'
+require 'ecs.ecshelpers'
+local timerSystem = require 'systems.timer'
+local scriptSystem = require 'systems.script'
+local controllerSystem = require 'systems.controller'
 
 local Comps = require 'comps'
 
-
 local Resources = require 'modules.ecstest.resources'
+
+local keyboardControllerInput = require 'keyboardcontrollerinput'
 
 local BlenderCube96 = "assets/images/blender_cube_96.png" -- 96x128
 local Maya = "assets/images/maya_trans.png"
@@ -30,7 +32,7 @@ local RunSystems = iterateFuncs({
   -- outputCleanupSystem,
   timerSystem,
   -- selfDestructSystem,
-  -- controllerSystem,
+  controllerSystem,
   scriptSystem,
   isoSpriteAnimSystem,
   -- avatarControlSystem,
@@ -68,8 +70,9 @@ local function setupEstore(estore, resources, opts)
     {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.1", dir="fr", action="walk"}},
     {'isoSpriteAnimated', {timer='animation'}},
     {'timer', {name='animation', countDown=false}},
+    {'controller', {id='con1'}},
     -- {'isoDebug', {on=true}},
-    -- {'script', {scriptName='doTheAnim', on='tick'}}
+    {'script', {scriptName='moverTest', on='tick'}}
   })
 
   -- isoWorld:newChild({
@@ -113,9 +116,16 @@ Updaters.tick = function(world,action)
   return world,effects
 end
 
+Updaters.keyboard = function(world,action)
+  -- addInputEvent(world.input, action)
+  keyboardControllerInput(world.input, { up='w', left='a', down='s', right='d' }, 'con1', action, world.controllerState)
+  return world,nil
+end
+
 Updaters.mouse = function(world,action)
   return world,nil
 end
+
 
 local function drawSpriteBlock(block)
   local pic = block.pic
@@ -265,6 +275,8 @@ local function newWorld(opts)
   model.input = {dt=0, events={}}
 
   model.caches = { blockCache={} }
+
+  model.controllerState = {}
 
   setupEstore(model.estore, model.resources, opts)
 
