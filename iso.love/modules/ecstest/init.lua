@@ -6,6 +6,8 @@ require 'ecs.ecshelpers'
 local timerSystem = require 'systems.timer'
 local scriptSystem = require 'systems.script'
 local controllerSystem = require 'systems.controller'
+local isoSpriteAnimSystem = require 'systems.isospriteanim'
+local characterMoverSystem = require 'systems.charactermover'
 
 local Comps = require 'comps'
 
@@ -17,15 +19,6 @@ local BlenderCube96 = "assets/images/blender_cube_96.png" -- 96x128
 local Maya = "assets/images/maya_trans.png"
 local Freya = "assets/images/freya_trans.png"
 
-local isoSpriteAnimSystem = defineUpdateSystem(hasComps('isoSprite','isoSpriteAnimated','timer'), function(e,estore,input,resources)
-  local timer = e.timers[e.isoSpriteAnimated.timer]
-  local spriteDef = resources.sprites[e.isoSprite.id]
-  if timer and spriteDef then
-    e.isoSprite.picname = spriteDef.animBundle.picNameAtTime(e.isoSprite.action, e.isoSprite.dir, timer.t)
-  end
-end)
-
-
 local Updaters = {}
 
 local RunSystems = iterateFuncs({
@@ -34,6 +27,7 @@ local RunSystems = iterateFuncs({
   -- selfDestructSystem,
   controllerSystem,
   scriptSystem,
+  characterMoverSystem,
   isoSpriteAnimSystem,
   -- avatarControlSystem,
   -- moverSystem,
@@ -72,7 +66,7 @@ local function setupEstore(estore, resources, opts)
     {'timer', {name='animation', countDown=false}},
     {'controller', {id='con1'}},
     -- {'isoDebug', {on=true}},
-    {'script', {scriptName='moverTest', on='tick'}}
+    -- {'script', {scriptName='moverTest', on='tick'}}
   })
 
   -- isoWorld:newChild({
