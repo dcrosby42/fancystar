@@ -75,7 +75,7 @@ local function load()
     },
     blockBlue = {
       id="blockBlue",
-      offset={x=0, y=1, z=0},
+      offset={x=0, y=0, z=0},
       size={x=1, y=1, z=1},
       imageOffset={x=48, y=128},
       color=Colors.Blue,

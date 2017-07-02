@@ -14,6 +14,7 @@ local Comps = require 'comps'
 local Resources = require 'modules.ecstest.resources'
 
 local keyboardControllerInput = require 'keyboardcontrollerinput'
+local addMapBlocks = require 'modules.ecstest.addmapblocks'
 
 local BlenderCube96 = "assets/images/blender_cube_96.png" -- 96x128
 local Maya = "assets/images/maya_trans.png"
@@ -41,23 +42,25 @@ local function setupEstore(estore, resources, opts)
     {'isoworld',{}},
   })
 
-  isoWorld:newChild({
-    {'isoSprite', {id='blockRed', picname="blender_cube_96"}},
-    {'isoPos', {x=0,y=0,z=0}},
-  })
-  isoWorld:newChild({
-    {'isoSprite', {id='blockYellow', picname="blender_cube_96"}},
-    {'isoPos', {x=1,y=0,z=0}},
-  })
-  isoWorld:newChild({
-    {'isoSprite', {id='blockGreen', picname="blender_cube_96"}},
-    {'isoPos', {x=1,y=-1,z=0}},
-  })
-  isoWorld:newChild({
-    {'isoSprite', {id='blockBlue', picname="blender_cube_96"}},
-    {'isoPos', {x=0,y=0,z=0}},
-    {'isoDebug', {on=false}},
-  })
+  addMapBlocks(isoWorld)
+
+  -- isoWorld:newChild({
+  --   {'isoSprite', {id='blockRed', picname="blender_cube_96"}},
+  --   {'isoPos', {x=0,y=0,z=0}},
+  -- })
+  -- isoWorld:newChild({
+  --   {'isoSprite', {id='blockYellow', picname="blender_cube_96"}},
+  --   {'isoPos', {x=1,y=0,z=0}},
+  -- })
+  -- isoWorld:newChild({
+  --   {'isoSprite', {id='blockGreen', picname="blender_cube_96"}},
+  --   {'isoPos', {x=1,y=-1,z=0}},
+  -- })
+  -- isoWorld:newChild({
+  --   {'isoSprite', {id='blockBlue', picname="blender_cube_96"}},
+  --   {'isoPos', {x=0,y=0,z=0}},
+  --   {'isoDebug', {on=false}},
+  -- })
 
   isoWorld:newChild({
     {'isoPos', {x=0.5,y=0.5,z=1}},
