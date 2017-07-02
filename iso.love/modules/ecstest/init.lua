@@ -173,6 +173,7 @@ local function pickBlock(x,y, blocks)
   end
   return nil
 end
+
 local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
   local sortedBlocks = isoWorldEnt.isoWorld.sortedBlocks
 
@@ -215,21 +216,21 @@ end
 -- Module interface:
 --
 local function newWorld(opts)
-  local model = {}
-  model.estore = Estore:new()
-  model.resources = Resources.load()
-  model.input = {dt=0, events={}}
+  local world = {}
+  world.estore = Estore:new()
+  world.resources = Resources.load()
+  world.input = {dt=0, events={}}
 
-  model.caches = { blockCache={} }
+  world.caches = { blockCache={} }
 
-  model.controllerState = {}
-  model.mouse = {x=0,y=0}
+  world.controllerState = {}
+  world.mouse = {x=0,y=0}
 
-  model.xform={tx=450, ty=450, sx=1, sy=1}
+  world.xform={tx=450, ty=450, sx=1, sy=1}
 
-  setupEstore(model.estore, model.resources, opts)
+  setupEstore(world.estore, world.resources, opts)
 
-  return model
+  return world
 end
 
 local function updateWorld(world, action)
