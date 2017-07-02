@@ -33,6 +33,12 @@ local function spaceToScreen_(x,y,z)
   return ((x-y) * HALF_TW), -(x+y) * HALF_TH - (z * TILE_Z)
 end
 
+local function screenToSpace_(x,y)
+  local spacex = (x / HALF_TW - y / HALF_TH) / 2
+  local spacey = -(y / HALF_TH + x / HALF_TW) / 2
+  return spacex,spacey
+end
+
 local function defaultSil()
   return {x={0,0},y={0,0},h={0,0}}
 end
@@ -225,6 +231,7 @@ Iso.newBlock = newBlock
 Iso.newSortable = newSortable
 Iso.spaceToScreen = spaceToScreen
 Iso.spaceToScreen_ = spaceToScreen_
+Iso.screenToSpace_ = screenToSpace_
 Iso.blocksOverlap = blocksOverlap
 Iso.getSpaceSepAxis = getSpaceSepAxis
 Iso.getFrontBlock = getFrontBlock

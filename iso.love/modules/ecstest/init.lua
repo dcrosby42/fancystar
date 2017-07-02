@@ -119,6 +119,8 @@ Updaters.keyboard = function(world,action)
 end
 
 Updaters.mouse = function(world,action)
+  world.mouse.x = action.x
+  world.mouse.y = action.y
   return world,nil
 end
 
@@ -222,7 +224,7 @@ local function newCachedBlock(e)
   return block
 end
 
-local function drawIsoWorld(isoWorldEnt, estore, resources, blockCache)
+local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
   local saw = {}
   -- Find entities to draw:
   estore:walkEntity(isoWorldEnt, hasComps('isoSprite'),function(e)
@@ -237,8 +239,8 @@ local function drawIsoWorld(isoWorldEnt, estore, resources, blockCache)
     end
   end)
 
+  -- Sort blocks, dropping any cached blocks that no longer correspond to an entity:
   local toSort = {}
-  -- Filter out cached blocks that no longer correspond to an entity:
   for eid,block in pairs(blockCache) do
     if lcontains(saw,eid) then
       table.insert(toSort, block)
@@ -249,14 +251,33 @@ local function drawIsoWorld(isoWorldEnt, estore, resources, blockCache)
   end
   local sortedBlocks = Iso.sortBlocks(toSort)
 
+  -- DRAW THE SORTED BLOCKS
   -- TODO move this translation up?
   -- TODO use viewport component to determine translation
   love.graphics.push()
-  love.graphics.translate(400,400)
+  love.graphics.translate(world.xform.tx,world.xform.ty)
   for i=1,#sortedBlocks do
     drawSpriteBlock(sortedBlocks[i])
   end
 
+  -- Draw projection axes:
+  local ox,oy = Iso.spaceToScreen_(0,0,0)
+  local xx,xy = Iso.spaceToScreen_(5,0,0)
+  local yx,yy = Iso.spaceToScreen_(0,5,0)
+  local zx,zy = Iso.spaceToScreen_(0,0,5)
+  love.graphics.setColor(unpack(Colors.Red))
+  love.graphics.line(ox,oy, xx,xy)
+  love.graphics.setColor(unpack(Colors.Green))
+  love.graphics.line(ox,oy, yx,yy)
+  love.graphics.setColor(unpack(Colors.Blue))
+  love.graphics.line(ox,oy, zx,zy)
+  love.graphics.setPointSize(4)
+
+  local smx,smy = Iso.screenToSpace_(world.mouse.x - world.xform.tx, world.mouse.y - world.xform.ty)
+  love.graphics.setColor(unpack(Colors.Yellow))
+  local xmax,xmay = Iso.spaceToScreen_(smx,0,0)
+  local ymax,ymay = Iso.spaceToScreen_(0,smy,0)
+  love.graphics.points(ox,oy, xmax,xmay, ymax,ymay)
 
   love.graphics.pop()
 end
@@ -273,6 +294,9 @@ local function newWorld(opts)
   model.caches = { blockCache={} }
 
   model.controllerState = {}
+  model.mouse = {x=0,y=0}
+
+  model.xform={tx=450, ty=450, sx=1, sy=1}
 
   setupEstore(model.estore, model.resources, opts)
 
@@ -292,7 +316,7 @@ local function drawWorld(world)
   love.graphics.setColor(255,255,255)
 
   world.estore:seekEntity(hasComps('isoworld'),function(e)
-    drawIsoWorld(e, world.estore, world.resources, world.caches.blockCache)
+    drawIsoWorld(world, e, world.estore, world.resources, world.caches.blockCache)
   end)
 end
 
