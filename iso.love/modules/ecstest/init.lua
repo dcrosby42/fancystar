@@ -119,8 +119,8 @@ Updaters.keyboard = function(world,action)
 end
 
 Updaters.mouse = function(world,action)
-  world.mouse.x = action.x
-  world.mouse.y = action.y
+  world.mouse.x = action.x - world.xform.tx
+  world.mouse.y = action.y - world.xform.ty
   return world,nil
 end
 
@@ -208,9 +208,10 @@ local function updateCachedBlock(block,e,resources)
     block.debug.on = true
   end
   block.pos = applyOffset(getIsoPos(e), block.spriteOffset)
+  block.debug.spritePos = getIsoPos(e) -- TODO moved this out of the following IF because I want this pos avail for mouse pick debug
   if e.isoDebug and e.isoDebug.on then
     block.debug.on = true
-    block.debug.spritePos = getIsoPos(e)
+    -- block.debug.spritePos = getIsoPos(e) -- belongs here, but see above comment re mouse picking
   else
     block.debug.on = false
   end
@@ -224,6 +225,19 @@ local function newCachedBlock(e)
   return block
 end
 
+local function pickBlock(x,y, blocks)
+  for i=#blocks,1,-1 do
+    local block = blocks[i]
+    local bx,by = Iso.spaceToScreen_(block.pos.x, block.pos.y, block.pos.z)
+    bx = bx - block.imageOffset.x
+    by = by - block.imageOffset.y
+    if math.pointinrect(x,y, bx,by, block.pic.rect.w, block.pic.rect.h) then
+      return block
+    end
+  end
+  return nil
+end
+
 local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
   local saw = {}
   -- Find entities to draw:
@@ -232,6 +246,7 @@ local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
     if blockCache[e.eid] then
       -- UPDATE CACHED BLOCK
       updateCachedBlock(blockCache[e.eid], e, resources)
+      blockCache[e.eid].debug.on = false -- TODO better mouse picking
     else
       -- ADD NEW CACHED BLOCK
       blockCache[e.eid] = updateCachedBlock(newCachedBlock(e), e, resources)
@@ -250,6 +265,12 @@ local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
     end
   end
   local sortedBlocks = Iso.sortBlocks(toSort)
+
+  local mouseBlock = pickBlock(world.mouse.x, world.mouse.y, sortedBlocks)
+  if mouseBlock then
+    print("mouse over block: "..mouseBlock.pic.name)
+    mouseBlock.debug.on = true
+  end
 
   -- DRAW THE SORTED BLOCKS
   -- TODO move this translation up?
@@ -273,7 +294,7 @@ local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
   love.graphics.line(ox,oy, zx,zy)
   love.graphics.setPointSize(4)
 
-  local smx,smy = Iso.screenToSpace_(world.mouse.x - world.xform.tx, world.mouse.y - world.xform.ty)
+  local smx,smy = Iso.screenToSpace_(world.mouse.x, world.mouse.y)
   love.graphics.setColor(unpack(Colors.Yellow))
   local xmax,xmay = Iso.spaceToScreen_(smx,0,0)
   local ymax,ymay = Iso.spaceToScreen_(0,smy,0)
