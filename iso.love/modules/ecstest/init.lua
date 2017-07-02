@@ -42,8 +42,6 @@ local function setupEstore(estore, resources, opts)
     {'isoworld',{}},
   })
 
-  addMapBlocks(isoWorld)
-
   -- isoWorld:newChild({
   --   {'isoSprite', {id='blockRed', picname="blender_cube_96"}},
   --   {'isoPos', {x=0,y=0,z=0}},
@@ -61,6 +59,7 @@ local function setupEstore(estore, resources, opts)
   --   {'isoPos', {x=0,y=0,z=0}},
   --   {'isoDebug', {on=false}},
   -- })
+  addMapBlocks(isoWorld)
 
   isoWorld:newChild({
     {'isoPos', {x=0.5,y=0.5,z=1}},
@@ -68,7 +67,7 @@ local function setupEstore(estore, resources, opts)
     {'isoSpriteAnimated', {timer='animation'}},
     {'timer', {name='animation', countDown=false}},
     {'controller', {id='con1'}},
-    -- {'isoDebug', {on=true}},
+    {'isoDebug', {on=true}},
     -- {'script', {scriptName='moverTest', on='tick'}}
   })
 

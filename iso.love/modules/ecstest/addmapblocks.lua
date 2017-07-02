@@ -18,11 +18,6 @@ end
 local function addMapBlocks(isoWorld)
   local items = {}
   tconcat(items, genCheckerboard(-2,-3, 3,2, 0,0, 'blockWhite', 'blockBlue'))
-  -- tconcat(items, genCheckerboard(-2,-3, 3,2, 0,0, 'blockWhite', 'blockBlue'))
-  -- tconcat(items, genCheckerboard(0,0, 5,5, -1,-1, 'blockRed', 'blockGreen'))
-  -- tconcat(items, genCheckerboard(0,5, 5,5, 0,1, 'blockBlue', 'blockWhite'))
-  -- tconcat(items, genCheckerboard(0,0, 5,0, 0,0, 'blockWhite', 'blockBlue'))
-  -- tconcat(items, genCheckerboard(0,0, 0,5, 2,2, 'blockBlue', 'blockWhite'))
   tconcat(items, genCheckerboard(1,2, 1,2, 1,3, 'blockRed','blockWhite'))
   tconcat(items, genCheckerboard(1,-3, 1,-3, 1,3, 'blockRed','blockWhite'))
   tconcat(items, genCheckerboard(1,-2, 1,1, 3,3, 'blockRed','blockWhite'))
