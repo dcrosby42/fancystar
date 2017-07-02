@@ -8,6 +8,7 @@ local scriptSystem = require 'systems.script'
 local controllerSystem = require 'systems.controller'
 local isoSpriteAnimSystem = require 'systems.isospriteanim'
 local characterMoverSystem = require 'systems.charactermover'
+local blockMapSystem = require 'systems.blockmap'
 
 local Comps = require 'comps'
 
@@ -34,14 +35,14 @@ local RunSystems = iterateFuncs({
   -- moverSystem,
   -- animSystem,
   -- zChildrenSystem,
+  blockMapSystem,
   -- effectsSystem,
 })
 
 local function setupEstore(estore, resources, opts)
   local isoWorld = estore:newEntity({
-    {'isoworld',{}},
+    {'isoWorld',{}},
   })
-
   -- isoWorld:newChild({
   --   {'isoSprite', {id='blockRed', picname="blender_cube_96"}},
   --   {'isoPos', {x=0,y=0,z=0}},
@@ -123,7 +124,6 @@ Updaters.mouse = function(world,action)
   world.mouse.y = action.y - world.xform.ty
   return world,nil
 end
-
 
 local function drawSpriteBlock(block)
   local pic = block.pic
@@ -238,44 +238,16 @@ local function pickBlock(x,y, blocks)
   end
   return nil
 end
-
 local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
-  local saw = {}
-  -- Find entities to draw:
-  estore:walkEntity(isoWorldEnt, hasComps('isoSprite'),function(e)
-    table.insert(saw, e.eid)
-    if blockCache[e.eid] then
-      -- UPDATE CACHED BLOCK
-      updateCachedBlock(blockCache[e.eid], e, resources)
-      blockCache[e.eid].debug.on = false -- TODO better mouse picking
-    else
-      -- ADD NEW CACHED BLOCK
-      blockCache[e.eid] = updateCachedBlock(newCachedBlock(e), e, resources)
-      local bl = blockCache[e.eid]
-    end
-  end)
-
-  -- Sort blocks, dropping any cached blocks that no longer correspond to an entity:
-  local toSort = {}
-  for eid,block in pairs(blockCache) do
-    if lcontains(saw,eid) then
-      table.insert(toSort, block)
-    else
-      -- REMOVE CACHED BLOCK
-      blockCache[eid] = nil
-    end
-  end
-  local sortedBlocks = Iso.sortBlocks(toSort)
+  local sortedBlocks = isoWorldEnt.isoWorld.sortedBlocks
 
   local mouseBlock = pickBlock(world.mouse.x, world.mouse.y, sortedBlocks)
   if mouseBlock then
-    -- print("mouse over block: "..mouseBlock.pic.name)
     mouseBlock.debug.on = true
   end
 
   -- DRAW THE SORTED BLOCKS
   -- TODO move this translation up?
-  -- TODO use viewport component to determine translation
   love.graphics.push()
   love.graphics.translate(world.xform.tx,world.xform.ty)
   for i=1,#sortedBlocks do
@@ -337,7 +309,7 @@ local function drawWorld(world)
   love.graphics.setBackgroundColor(0,0,0)
   love.graphics.setColor(255,255,255)
 
-  world.estore:seekEntity(hasComps('isoworld'),function(e)
+  world.estore:seekEntity(hasComps('isoWorld'),function(e)
     drawIsoWorld(world, e, world.estore, world.resources, world.caches.blockCache)
   end)
 end
