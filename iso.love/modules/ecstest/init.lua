@@ -146,7 +146,7 @@ local function drawSpriteBlock(block)
     IsoDebug.drawBlock(block,{255,255,255,100})
 
     -- draw "real" position of sprite as a yellow dot:
-    local sx,sy = Iso.spaceToScreen_(block.debug.spritePos.x, block.debug.spritePos.y, block.debug.spritePos.z)
+    local sx,sy = Iso.spaceToScreen_(block.spritePos.x, block.spritePos.y, block.spritePos.z)
     love.graphics.setPointSize(4)
     love.graphics.setColor(255,255,0,180)
     love.graphics.points(sx,sy)
@@ -175,11 +175,12 @@ local function getIsoPos(e)
   end
 end
 
-local function applyOffset(isoPos, offset)
-  isoPos.x = isoPos.x - offset.x
-  isoPos.y = isoPos.y - offset.y
-  isoPos.z = isoPos.z - offset.z
-  return isoPos
+local function copyOffset(isoPos, offset)
+  return {
+    x = isoPos.x - offset.x,
+    y = isoPos.y - offset.y,
+    z = isoPos.z - offset.z,
+  }
 end
 
 local function updateCachedBlock(block,e,resources)
@@ -204,14 +205,10 @@ local function updateCachedBlock(block,e,resources)
     block.pic = resources.pics[e.isoSprite.picname]
     assert(block.pic, "No sprite for block.picname="..block.picname)
   end
+  block.spritePos = getIsoPos(e)
+  block.pos = copyOffset(block.spritePos, block.spriteOffset)
   if e.isoDebug and e.isoDebug.on then
     block.debug.on = true
-  end
-  block.pos = applyOffset(getIsoPos(e), block.spriteOffset)
-  block.debug.spritePos = getIsoPos(e) -- TODO moved this out of the following IF because I want this pos avail for mouse pick debug
-  if e.isoDebug and e.isoDebug.on then
-    block.debug.on = true
-    -- block.debug.spritePos = getIsoPos(e) -- belongs here, but see above comment re mouse picking
   else
     block.debug.on = false
   end
@@ -232,7 +229,11 @@ local function pickBlock(x,y, blocks)
     bx = bx - block.imageOffset.x
     by = by - block.imageOffset.y
     if math.pointinrect(x,y, bx,by, block.pic.rect.w, block.pic.rect.h) then
-      return block
+      local imgdata = block.pic.image:getData()
+      local r,g,b,a = imgdata:getPixel(x-bx+block.pic.rect.x, y-by+block.pic.rect.y)
+      if a > 0 then
+        return block
+      end
     end
   end
   return nil
@@ -268,7 +269,7 @@ local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
 
   local mouseBlock = pickBlock(world.mouse.x, world.mouse.y, sortedBlocks)
   if mouseBlock then
-    print("mouse over block: "..mouseBlock.pic.name)
+    -- print("mouse over block: "..mouseBlock.pic.name)
     mouseBlock.debug.on = true
   end
 
@@ -282,23 +283,23 @@ local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
   end
 
   -- Draw projection axes:
-  local ox,oy = Iso.spaceToScreen_(0,0,0)
-  local xx,xy = Iso.spaceToScreen_(5,0,0)
-  local yx,yy = Iso.spaceToScreen_(0,5,0)
-  local zx,zy = Iso.spaceToScreen_(0,0,5)
-  love.graphics.setColor(unpack(Colors.Red))
-  love.graphics.line(ox,oy, xx,xy)
-  love.graphics.setColor(unpack(Colors.Green))
-  love.graphics.line(ox,oy, yx,yy)
-  love.graphics.setColor(unpack(Colors.Blue))
-  love.graphics.line(ox,oy, zx,zy)
-  love.graphics.setPointSize(4)
-
-  local smx,smy = Iso.screenToSpace_(world.mouse.x, world.mouse.y)
-  love.graphics.setColor(unpack(Colors.Yellow))
-  local xmax,xmay = Iso.spaceToScreen_(smx,0,0)
-  local ymax,ymay = Iso.spaceToScreen_(0,smy,0)
-  love.graphics.points(ox,oy, xmax,xmay, ymax,ymay)
+  -- local ox,oy = Iso.spaceToScreen_(0,0,0)
+  -- local xx,xy = Iso.spaceToScreen_(5,0,0)
+  -- local yx,yy = Iso.spaceToScreen_(0,5,0)
+  -- local zx,zy = Iso.spaceToScreen_(0,0,5)
+  -- love.graphics.setColor(unpack(Colors.Red))
+  -- love.graphics.line(ox,oy, xx,xy)
+  -- love.graphics.setColor(unpack(Colors.Green))
+  -- love.graphics.line(ox,oy, yx,yy)
+  -- love.graphics.setColor(unpack(Colors.Blue))
+  -- love.graphics.line(ox,oy, zx,zy)
+  -- love.graphics.setPointSize(4)
+  --
+  -- local smx,smy = Iso.screenToSpace_(world.mouse.x, world.mouse.y)
+  -- love.graphics.setColor(unpack(Colors.Yellow))
+  -- local xmax,xmay = Iso.spaceToScreen_(smx,0,0)
+  -- local ymax,ymay = Iso.spaceToScreen_(0,smy,0)
+  -- love.graphics.points(ox,oy, xmax,xmay, ymax,ymay)
 
   love.graphics.pop()
 end
