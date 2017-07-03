@@ -150,7 +150,6 @@ local function drawSpriteBlock(block)
     love.graphics.setPointSize(4)
     love.graphics.setColor(255,255,0,180)
     love.graphics.points(sx,sy)
-    -- local slx,sly = Iso.spaceToScreen_(block.pos.x-sloc.x, block.pos.y-sloc.y, block.pos.z-sloc.z) love.graphics.points(slx,sly)
 
     love.graphics.setPointSize(1)
   end
