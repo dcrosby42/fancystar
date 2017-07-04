@@ -48,6 +48,17 @@ return function(input, map, targetId, action, controllerState)
     addInputEvent(input, {type='controller', id=targetId, input="leftx", action=mag})
     return true
 
+  elseif key == map.jump then
+    local mag = 0
+    if action.state == 'pressed' then
+      controllerState.jump = true
+      mag = 1
+    else
+      controllerState.jump = false
+    end
+    addInputEvent(input, {type='controller', id=targetId, input="jump", action=mag})
+    return true
+
   end
   return false
 end

@@ -22,8 +22,10 @@ Comp.define('script',{'scriptName','','on','call'})
 -- Comp.define("player", {})
 -- Comp.define("map",{'id',''})
 Comp.define("collidable", {})
+Comp.define("adjacents", {'top',false,'bottom',false,'left',false,'right',false,'front',false,'back',false,})
+Comp.define("gravity",{})
 
-Comp.define("controller", {'id','','leftx',0,'lefty',0,})
+Comp.define("controller", {'id','','leftx',0,'lefty',0,'jump',0})
 
 --
 Comp.define("color",{'color',{255,255,255}})

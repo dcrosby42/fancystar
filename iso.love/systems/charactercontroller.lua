@@ -1,5 +1,5 @@
 local moverSpeed = 0.04
-return defineUpdateSystem(hasComps('controller','isoSprite','vel','isoSpriteAnimated'), function(e,estore,input,resources)
+return defineUpdateSystem(hasComps('controller','isoSprite','vel'), function(e,estore,input,resources)
   e.vel.z = 0
   e.vel.x = 0
   e.vel.y = 0
@@ -27,5 +27,17 @@ return defineUpdateSystem(hasComps('controller','isoSprite','vel','isoSpriteAnim
     end
   else
       e.isoSprite.action = 'stand'
+  end
+
+  if e.controller.jump > 0 then
+    if not e.timers.jump and e.adjacents and e.adjacents.bottom then
+      -- e:newComp('timer', {name='jump', countDown=false})
+      e:newComp('timer', {name='jump', t=0.2})
+    end
+    if e.timers.jump and e.timers.jump.t > 0 then
+      e.vel.z = 0.2
+    end
+  elseif e.timers.jump and e.controller.jump == 0 then
+    e:removeComp(e.timers.jump)
   end
 end)

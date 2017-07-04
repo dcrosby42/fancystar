@@ -10,6 +10,7 @@ local isoSpriteAnimSystem = require 'systems.isospriteanim'
 local characterControllerSystem = require 'systems.charactercontroller'
 local blockMoverSystem = require 'systems.blockmover'
 local blockMapSystem = require 'systems.blockmap'
+local gravitySystem = require 'systems.gravity'
 
 local Comps = require 'comps'
 
@@ -31,6 +32,7 @@ local RunSystems = iterateFuncs({
   controllerSystem,
   scriptSystem,
   characterControllerSystem,
+  gravitySystem,
   isoSpriteAnimSystem,
   -- avatarControlSystem,
   -- moverSystem,
@@ -68,6 +70,8 @@ local function setupEstore(estore, resources, opts)
     {'pos', {x=0.5,y=0.5,z=1}},
     {'vel', {}},
     {'collidable', {}},
+    {'adjacents', {}},
+    {'gravity', {}},
     {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.1", dir="fr", action="walk"}},
     {'isoSpriteAnimated', {timer='animation'}},
     {'timer', {name='animation', countDown=false}},
@@ -119,7 +123,7 @@ end
 
 Updaters.keyboard = function(world,action)
   -- addInputEvent(world.input, action)
-  keyboardControllerInput(world.input, { up='w', left='a', down='s', right='d' }, 'con1', action, world.controllerState)
+  keyboardControllerInput(world.input, { up='w', left='a', down='s', right='d', jump='space' }, 'con1', action, world.controllerState)
   return world,nil
 end
 
