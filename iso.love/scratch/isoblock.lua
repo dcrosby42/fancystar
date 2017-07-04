@@ -84,10 +84,10 @@ local function _spaceToIso(spacePos)
   }
 end
 
--- local function isoToScreen(isoPos)
+-- local function isoToScreen(pos)
 --   return {
---     x= isoPos.h * this.scale + this.origin.x,
---     y= -isoPos.v * this.scale + this.origin.y,
+--     x= pos.h * this.scale + this.origin.x,
+--     y= -pos.v * this.scale + this.origin.y,
 --   }
 -- end
 --

@@ -7,7 +7,8 @@ local timerSystem = require 'systems.timer'
 local scriptSystem = require 'systems.script'
 local controllerSystem = require 'systems.controller'
 local isoSpriteAnimSystem = require 'systems.isospriteanim'
-local characterMoverSystem = require 'systems.charactermover'
+local characterControllerSystem = require 'systems.charactercontroller'
+local blockMoverSystem = require 'systems.blockmover'
 local blockMapSystem = require 'systems.blockmap'
 
 local Comps = require 'comps'
@@ -29,13 +30,14 @@ local RunSystems = iterateFuncs({
   -- selfDestructSystem,
   controllerSystem,
   scriptSystem,
-  characterMoverSystem,
+  characterControllerSystem,
   isoSpriteAnimSystem,
   -- avatarControlSystem,
   -- moverSystem,
   -- animSystem,
   -- zChildrenSystem,
   blockMapSystem,
+  blockMoverSystem,
   -- effectsSystem,
 })
 
@@ -45,25 +47,27 @@ local function setupEstore(estore, resources, opts)
   })
   -- isoWorld:newChild({
   --   {'isoSprite', {id='blockRed', picname="blender_cube_96"}},
-  --   {'isoPos', {x=0,y=0,z=0}},
+  --   {'pos', {x=0,y=0,z=0}},
   -- })
   -- isoWorld:newChild({
   --   {'isoSprite', {id='blockYellow', picname="blender_cube_96"}},
-  --   {'isoPos', {x=1,y=0,z=0}},
+  --   {'pos', {x=1,y=0,z=0}},
   -- })
   -- isoWorld:newChild({
   --   {'isoSprite', {id='blockGreen', picname="blender_cube_96"}},
-  --   {'isoPos', {x=1,y=-1,z=0}},
+  --   {'pos', {x=1,y=-1,z=0}},
   -- })
   -- isoWorld:newChild({
   --   {'isoSprite', {id='blockBlue', picname="blender_cube_96"}},
-  --   {'isoPos', {x=0,y=0,z=0}},
+  --   {'pos', {x=0,y=0,z=0}},
   --   {'isoDebug', {on=false}},
   -- })
   addMapBlocks(isoWorld)
 
   isoWorld:newChild({
-    {'isoPos', {x=0.5,y=0.5,z=1}},
+    {'pos', {x=0.5,y=0.5,z=1}},
+    {'vel', {}},
+    {'collidable', {}},
     {'isoSprite', {id='tshirt_guy', picname="tshirt_guy.fl.walk.1", dir="fr", action="walk"}},
     {'isoSpriteAnimated', {timer='animation'}},
     {'timer', {name='animation', countDown=false}},
@@ -74,22 +78,22 @@ local function setupEstore(estore, resources, opts)
 
   -- isoWorld:newChild({
   --   {'isoSprite', {id='maya1', picname="maya.fl.stand.1"}},
-  --   {'isoPos', {x=0.5,y=0.5,z=1}},
+  --   {'pos', {x=0.5,y=0.5,z=1}},
   --   {'isoDebug', {on=true}},
   -- })
 
 
   -- isoWorld:newChild({
   --   {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
-  --   {'isoPos', {x=0.5,y=-0.5,z=1}},
+  --   {'pos', {x=0.5,y=-0.5,z=1}},
   -- })
   -- isoWorld:newChild({
   --   {'isoSprite', {id='maya1', picname="maya.fl.stand.1"}},
-  --   {'isoPos', {x=1.5,y=0.5,z=1}},
+  --   {'pos', {x=1.5,y=0.5,z=1}},
   -- })
   isoWorld:newChild({
     {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
-    {'isoPos', {x=1.5,y=-0.5,z=1}},
+    {'pos', {x=1.5,y=-0.5,z=1}},
   })
 
 end
@@ -173,12 +177,13 @@ local function pickBlock(x,y, blocks)
   return nil
 end
 
-local function drawIsoWorld(world, isoWorldEnt, estore, resources, blockCache)
-  local sortedBlocks = isoWorldEnt.isoWorld.sortedBlocks
+local function drawIsoWorld(world, isoWorldEnt, estore, resources)
+  local sortedBlocks = isoWorldEnt.isoWorld.blockCache.sorted
 
   local mouseBlock = pickBlock(world.mouse.x, world.mouse.y, sortedBlocks)
   if mouseBlock then
     mouseBlock.debug.on = true
+    love.graphics.print(mouseBlock.spriteId.." "..tflatten(mouseBlock.pos))
   end
 
   -- DRAW THE SORTED BLOCKS
@@ -220,8 +225,6 @@ local function newWorld(opts)
   world.resources = Resources.load()
   world.input = {dt=0, events={}}
 
-  world.caches = { blockCache={} }
-
   world.controllerState = {}
   world.mouse = {x=0,y=0}
 
@@ -245,7 +248,7 @@ local function drawWorld(world)
   love.graphics.setColor(255,255,255)
 
   world.estore:seekEntity(hasComps('isoWorld'),function(e)
-    drawIsoWorld(world, e, world.estore, world.resources, world.caches.blockCache)
+    drawIsoWorld(world, e, world.estore, world.resources)
   end)
 end
 

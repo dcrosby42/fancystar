@@ -2,27 +2,27 @@ local Iso = require 'iso'
 
 local function getIsoPos(e)
   local par = e:getParent()
-  if par and par.isoPos then
+  if par and par.pos then
     local pp = getIsoPos(par)
     return {
-      x=e.isoPos.x + pp.x,
-      y=e.isoPos.y + pp.y,
-      z=e.isoPos.z + pp.z,
+      x=e.pos.x + pp.x,
+      y=e.pos.y + pp.y,
+      z=e.pos.z + pp.z,
     }
   else
     return {
-      x=e.isoPos.x,
-      y=e.isoPos.y,
-      z=e.isoPos.z,
+      x=e.pos.x,
+      y=e.pos.y,
+      z=e.pos.z,
     }
   end
 end
 
-local function copyOffset(isoPos, offset)
+local function copyOffset(pos, offset)
   return {
-    x = isoPos.x - offset.x,
-    y = isoPos.y - offset.y,
-    z = isoPos.z - offset.z,
+    x = pos.x - offset.x,
+    y = pos.y - offset.y,
+    z = pos.z - offset.z,
   }
 end
 
@@ -61,39 +61,41 @@ end
 local function newCachedBlock(e)
   local block = Iso.newSortable()
   block.type = "spriteEntityBlock" -- not used?
+  block.eid = e.eid
   block.debug = {on=false}
   return block
 end
 
 local system = defineUpdateSystem(hasComps('isoWorld'), function(isoWorldEnt,estore,input,resources)
   local saw = {}
-  local blockCache = isoWorldEnt.isoWorld.blockCache
+  local blocksByEid = isoWorldEnt.isoWorld.blockCache.byEid
+
 
   -- Find entities to draw:
   estore:walkEntity(isoWorldEnt, hasComps('isoSprite'),function(e)
     table.insert(saw, e.eid)
-    if blockCache[e.eid] then
+    if blocksByEid[e.eid] then
       -- UPDATE CACHED BLOCK
-      updateCachedBlock(blockCache[e.eid], e, resources)
-      blockCache[e.eid].debug.on = false -- TODO better mouse picking
+      updateCachedBlock(blocksByEid[e.eid], e, resources)
+      blocksByEid[e.eid].debug.on = false -- TODO better mouse picking
     else
       -- ADD NEW CACHED BLOCK
-      blockCache[e.eid] = updateCachedBlock(newCachedBlock(e), e, resources)
-      local bl = blockCache[e.eid]
+      blocksByEid[e.eid] = updateCachedBlock(newCachedBlock(e), e, resources)
+      local bl = blocksByEid[e.eid]
     end
   end)
 
   -- Sort blocks, dropping any cached blocks that no longer correspond to an entity:
   local toSort = {}
-  for eid,block in pairs(blockCache) do
+  for eid,block in pairs(blocksByEid) do
     if lcontains(saw,eid) then
       table.insert(toSort, block)
     else
       -- REMOVE CACHED BLOCK
-      blockCache[eid] = nil
+      blocksByEid[eid] = nil
     end
   end
-  isoWorldEnt.isoWorld.sortedBlocks = Iso.sortBlocks(toSort)
+  isoWorldEnt.isoWorld.blockCache.sorted = Iso.sortBlocks(toSort)
 end)
 
 return system

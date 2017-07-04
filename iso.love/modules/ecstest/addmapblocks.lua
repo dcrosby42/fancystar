@@ -25,7 +25,7 @@ local function addMapBlocks(isoWorld)
   for _,item in ipairs(items) do
     isoWorld:newChild({
       {'isoSprite', {id=item.kind, picname="blender_cube_96"}},
-      {'isoPos', item.pos},
+      {'pos', item.pos},
     })
   end
 end

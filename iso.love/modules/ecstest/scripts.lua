@@ -21,7 +21,7 @@ end
 --   local e = context.entity
 --   if e.controller.lefty ~= 0 then
 --     local dy = e.controller.lefty * -moverSpeed
---     e.isoPos.y = e.isoPos.y + dy
+--     e.pos.y = e.pos.y + dy
 --     if e.controller.lefty < 0 then
 --       -- up left
 --       e.isoSprite.dir = 'bl'
@@ -33,7 +33,7 @@ end
 --     end
 --   elseif e.controller.leftx ~= 0 then
 --     local dx = e.controller.leftx * moverSpeed
---     e.isoPos.x = e.isoPos.x + dx
+--     e.pos.x = e.pos.x + dx
 --     if e.controller.leftx > 0 then
 --       -- up right
 --       e.isoSprite.dir = 'br'

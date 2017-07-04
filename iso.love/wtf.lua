@@ -20,10 +20,10 @@ local function spaceToIso(spacePos)
     v= (x+y)*0.5,              ---- Math.sin(Math.PI/6)
   }
 end
--- local function isoToScreen(isoPos)
+-- local function isoToScreen(pos)
 --   return {
---     x= isoPos.h * this.scale + this.origin.x,
---     y= -isoPos.v * this.scale + this.origin.y,
+--     x= pos.h * this.scale + this.origin.x,
+--     y= -pos.v * this.scale + this.origin.y,
 --   }
 -- end
 --
