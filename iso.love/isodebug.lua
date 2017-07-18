@@ -93,7 +93,15 @@ IsoDebug.drawBlock = function(block,color)
       spaceToScreen(pos.x+size.x,pos.y,pos.z+size.z),
     }
   }
+  local bEdge = {
+    spaceToScreen(pos.x, pos.y+size.y, pos.z),
+    spaceToScreen(pos.x+size.x, pos.y+size.y, pos.z),
+    spaceToScreen(pos.x+size.x, pos.y, pos.z),
+  }
   local r,g,b,a = unpack(color)
+  love.graphics.setColor(r,g,b,a)
+  love.graphics.line(bEdge[1][1], bEdge[1][2],  bEdge[2][1], bEdge[2][2],  bEdge[3][1], bEdge[3][2])
+
   love.graphics.setColor(r,g,b,100)
   for i=1,#faces do
     love.graphics.polygon("fill",faces[i][1][1],faces[i][1][2],faces[i][2][1],faces[i][2][2],faces[i][3][1],faces[i][3][2],faces[i][4][1],faces[i][4][2])

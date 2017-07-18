@@ -15,9 +15,11 @@ local function load()
     },
     tshirt_guy= {
       id="tshirt_guy",
-      offset={x=0.35, y=0.3, z=0},
-      size={x=0.4, y=0.4, z=1.55},
-      imageOffset={x=24, y=108},
+      -- offset={x=0.30, y=0.3, z=0},
+      offset={x=0.2, y=0.2, z=0},
+      size={x=0.4, y=0.4, z=1.45},
+      -- imageOffset={x=24, y=108},
+      imageOffset={x=23, y=102},
       animBundle={
         fallbackPicname='tshirt_guy.fl.stand.1',
         stand={
