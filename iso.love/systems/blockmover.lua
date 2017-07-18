@@ -124,11 +124,11 @@ local function tryMoveBlock(block,vec,otherBlocks)
           if vec.x > 0 then
             -- collided to the right
             local pendist = block.pos.x + block.size.x - other.pos.x
-            block.pos.x = block.pos.x - pendist
+            block.pos.x = block.pos.x - pendist - 0.001
           else
             -- collided downward
             local pendist = other.pos.x + other.size.x - block.pos.x
-            block.pos.x = block.pos.x + pendist
+            block.pos.x = block.pos.x + pendist + 0.001
           end
         end
       end
@@ -145,11 +145,11 @@ local function tryMoveBlock(block,vec,otherBlocks)
           if vec.y > 0 then
             -- collided ahead
             local pendist = block.pos.y + block.size.y - other.pos.y
-            block.pos.y = block.pos.y - pendist
+            block.pos.y = block.pos.y - pendist - 0.001
           else
             -- collided behind
             local pendist = other.pos.y + other.size.y - block.pos.y
-            block.pos.y = block.pos.y + pendist
+            block.pos.y = block.pos.y + pendist + 0.001
           end
         end
       end
