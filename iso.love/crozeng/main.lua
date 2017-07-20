@@ -134,22 +134,38 @@ end
 --
 -- INPUT EVENT HANDLERS
 --
+local function applyKeyboardModifiers(action)
+  for _,mod in ipairs({"ctrl","shift","gui"}) do
+    action[mod] = false
+    action["l"..mod] = false
+    action["r"..mod] = false
+    if love.keyboard.isDown("l"..mod) then
+      action["l"..mod] = true
+      action[mod] = true
+    elseif love.keyboard.isDown("r"..mod) then
+      action["r"..mod] = true
+      action[mod] = true
+    end
+  end
+end
+
 local function toKeyboardAction(state,key)
   local keyboardAction = {type="keyboard", action='', key='', ctrl=false, lctrl=false, lctrl=false, shift=false, lshift=false, lshift=false,  gui=false, lgui=false, lgui=false}
   keyboardAction.state=state
   keyboardAction.key=key
-  for _,mod in ipairs({"ctrl","shift","gui"}) do
-    keyboardAction[mod] = false
-    keyboardAction["l"..mod] = false
-    keyboardAction["r"..mod] = false
-    if love.keyboard.isDown("l"..mod) then
-      keyboardAction["l"..mod] = true
-      keyboardAction[mod] = true
-    elseif love.keyboard.isDown("r"..mod) then
-      keyboardAction["r"..mod] = true
-      keyboardAction[mod] = true
-    end
-  end
+  applyKeyboardModifiers(keyboardAction)
+  -- for _,mod in ipairs({"ctrl","shift","gui"}) do
+  --   keyboardAction[mod] = false
+  --   keyboardAction["l"..mod] = false
+  --   keyboardAction["r"..mod] = false
+  --   if love.keyboard.isDown("l"..mod) then
+  --     keyboardAction["l"..mod] = true
+  --     keyboardAction[mod] = true
+  --   elseif love.keyboard.isDown("r"..mod) then
+  --     keyboardAction["r"..mod] = true
+  --     keyboardAction[mod] = true
+  --   end
+  -- end
   return keyboardAction
 end
 function love.keypressed(key, _scancode, _isrepeat)
@@ -159,7 +175,7 @@ function love.keyreleased(key, _scancode, _isrepeat)
   updateWorld(toKeyboardAction("released",key))
 end
 
-local mouseAction = {type="mouse", state=nil, x=0, y=0, dx=0,dy=0,button=0, isTouch=0}
+local mouseAction = {type="mouse", state=nil, x=0, y=0, dx=0,dy=0,button=0, isTouch=0, ctrl=false, lctrl=false, lctrl=false, shift=false, lshift=false, lshift=false,  gui=false, lgui=false, lgui=false}
 function toMouseAction(s,x,y,b,it,dx,dy)
   mouseAction.state=s
   mouseAction.x=x
@@ -168,6 +184,7 @@ function toMouseAction(s,x,y,b,it,dx,dy)
   mouseAction.isTouch=it
   mouseAction.dx=dx
   mouseAction.dy=dy
+  applyKeyboardModifiers(mouseAction)
   return mouseAction
 end
 
