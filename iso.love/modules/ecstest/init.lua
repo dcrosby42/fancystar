@@ -126,12 +126,46 @@ end
 Updaters.keyboard = function(world,action)
   -- addInputEvent(world.input, action)
   keyboardControllerInput(world.input, { up='w', left='a', down='s', right='d', jump='space' }, 'con1', action, world.controllerState)
+
   return world,nil
+end
+
+local function addBlockToIsoWorld(world, pos, spriteId)
+  world.estore:seekEntity(hasComps('isoWorld'), function(e)
+    e:newChild({
+      {'isoSprite', {id=spriteId, picname="blender_cube_96"}},
+      {'pos', pos},
+    })
+  end)
 end
 
 Updaters.mouse = function(world,action)
   world.mouse.x = action.x - world.xform.tx
   world.mouse.y = action.y - world.xform.ty
+  if action.state == 'pressed' then
+    print(tflatten(action))
+    local block = world.mouse.pick.block
+    if block then
+      local face = world.mouse.pick.face
+      if face == 1 then
+        local pos = shallowclone(block.pos)
+        if action.shift then
+          pos.x = pos.x + 1
+        else
+          pos.x = pos.x - 1
+        end
+        addBlockToIsoWorld(world, pos, 'blockGreen')
+      elseif face == 2 then
+        local pos = shallowclone(block.pos)
+        pos.y = pos.y - 1
+        addBlockToIsoWorld(world, pos, 'blockGreen')
+      elseif face == 3 then
+        local pos = shallowclone(block.pos)
+        pos.z = pos.z + 1
+        addBlockToIsoWorld(world, pos, 'blockGreen')
+      end
+    end
+  end
   return world,nil
 end
 
@@ -216,12 +250,16 @@ end
 local function drawIsoWorld(world, isoWorldEnt, estore, resources)
   local sortedBlocks = isoWorldEnt.isoWorld.blockCache.sorted
 
+  world.mouse.pick.block = nil
+  world.mouse.pick.face = nil
   local mouseBlock = pickBlock(world.mouse.x, world.mouse.y, sortedBlocks)
   if mouseBlock then
+    world.mouse.pick.block = mouseBlock
     mouseBlock.debug.on = true
     love.graphics.print(mouseBlock.spriteId.." "..tflatten(mouseBlock.pos), 0,0)
     local blockFace = pickBlockFace(world.mouse.x, world.mouse.y, mouseBlock)
     if blockFace then
+      world.mouse.pick.face = blockFace.f
       love.graphics.print("  face: "..tflatten(blockFace), 0,15)
     end
   end
@@ -273,7 +311,7 @@ local function newWorld(opts)
   world.input = {dt=0, events={}}
 
   world.controllerState = {}
-  world.mouse = {x=0,y=0}
+  world.mouse = {x=0,y=0,pick={}}
 
   world.xform={tx=450, ty=450, sx=1, sy=1}
 
