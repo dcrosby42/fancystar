@@ -1,5 +1,7 @@
 local Iso = require 'iso'
 local IsoDebug = require 'isodebug'
+local pointInPolygon = require('pointinpolygon').pointInPolygon
+local spaceToScreen = Iso.spaceToScreen
 local Colors = require 'colors'
 local Estore = require 'ecs.estore'
 require 'ecs.ecshelpers'
@@ -180,6 +182,36 @@ local function pickBlock(x,y, blocks)
   end
   return nil
 end
+local function pickBlockFace(x,y, block)
+  local pos = block.pos
+  local size = block.size
+  local faces = {
+    { -- left
+      spaceToScreen(pos.x,pos.y,pos.z),
+      spaceToScreen(pos.x,pos.y+size.y,pos.z),
+      spaceToScreen(pos.x,pos.y+size.y,pos.z+size.z),
+      spaceToScreen(pos.x,pos.y,pos.z+size.z),
+    },
+    { -- right
+      spaceToScreen(pos.x,pos.y,pos.z),
+      spaceToScreen(pos.x,pos.y,pos.z+size.z),
+      spaceToScreen(pos.x+size.x,pos.y,pos.z+size.z),
+      spaceToScreen(pos.x+size.x,pos.y,pos.z),
+    },
+    { --top
+      spaceToScreen(pos.x,pos.y,pos.z+size.z),
+      spaceToScreen(pos.x,pos.y+size.y,pos.z+size.z),
+      spaceToScreen(pos.x+size.x,pos.y+size.y,pos.z+size.z),
+      spaceToScreen(pos.x+size.x,pos.y,pos.z+size.z),
+    }
+  }
+  for f=1,#faces do
+    if pointInPolygon(x,y, faces[f]) then
+      return {f=f}
+    end
+  end
+  return nil
+end
 
 local function drawIsoWorld(world, isoWorldEnt, estore, resources)
   local sortedBlocks = isoWorldEnt.isoWorld.blockCache.sorted
@@ -187,7 +219,11 @@ local function drawIsoWorld(world, isoWorldEnt, estore, resources)
   local mouseBlock = pickBlock(world.mouse.x, world.mouse.y, sortedBlocks)
   if mouseBlock then
     mouseBlock.debug.on = true
-    love.graphics.print(mouseBlock.spriteId.." "..tflatten(mouseBlock.pos))
+    love.graphics.print(mouseBlock.spriteId.." "..tflatten(mouseBlock.pos), 0,0)
+    local blockFace = pickBlockFace(world.mouse.x, world.mouse.y, mouseBlock)
+    if blockFace then
+      love.graphics.print("  face: "..tflatten(blockFace), 0,15)
+    end
   end
 
   -- DRAW THE SORTED BLOCKS
@@ -197,6 +233,8 @@ local function drawIsoWorld(world, isoWorldEnt, estore, resources)
   for i=1,#sortedBlocks do
     drawSpriteBlock(sortedBlocks[i])
   end
+
+
 
   -- Draw projection axes:
   -- local ox,oy = Iso.spaceToScreen_(0,0,0)
@@ -216,8 +254,13 @@ local function drawIsoWorld(world, isoWorldEnt, estore, resources)
   -- local xmax,xmay = Iso.spaceToScreen_(smx,0,0)
   -- local ymax,ymay = Iso.spaceToScreen_(0,smy,0)
   -- love.graphics.points(ox,oy, xmax,xmay, ymax,ymay)
+  love.graphics.setPointSize(3)
+  love.graphics.setColor(255,0,0)
+  love.graphics.points(world.mouse.x, world.mouse.y)
+  love.graphics.setColor(255,255,255)
 
   love.graphics.pop()
+
 end
 
 --

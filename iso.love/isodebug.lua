@@ -110,6 +110,17 @@ IsoDebug.drawBlock = function(block,color)
   for i=1,#faces do
     love.graphics.polygon("line",faces[i][1][1],faces[i][1][2],faces[i][2][1],faces[i][2][2],faces[i][3][1],faces[i][3][2],faces[i][4][1],faces[i][4][2])
   end
+
+  -- Draw dots on the corners
+  love.graphics.setColor(0,255,0)
+  love.graphics.setPointSize(3)
+  for f=1,#faces do
+    for i=1,#faces[f] do
+      love.graphics.points(faces[f][i][1],faces[f][i][2])
+    end
+  end
+
+  love.graphics.setPointSize(1)
   love.graphics.setColor(unpack(Colors.White))
 end
 return IsoDebug

@@ -1,0 +1,24 @@
+-- http://alienryderflex.com/polygon/
+--  The function will return true if the point x,y is inside the polygon, or
+--  false if it is not.  If the point is exactly on the edge of the polygon,
+--  then the function may return true or false.
+--
+--  Note that division by zero is avoided because the division is protected
+--  by the "if" clause which surrounds it.
+local function pointInPolygon1(x, y, verts)
+  local result = false
+  local j = #verts --  - 1
+  for i=1,#verts do
+    if ((verts[i][2] < y and verts[j][2] >= y) or (verts[j][2] < y and verts[i][2] >= y)) and (verts[i][1] <= x or verts[j][1] <= x) then
+      if verts[i][1] + (y - verts[i][2]) / (verts[j][2] - verts[i][2]) * (verts[j][1] - verts[i][1]) < x then
+        result = not result
+      end
+    end
+    j = i
+  end
+  return result
+end
+
+return {
+  pointInPolygon=pointInPolygon1
+}
