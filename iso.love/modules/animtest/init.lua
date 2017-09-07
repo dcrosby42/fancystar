@@ -97,6 +97,7 @@ local function drawWorld(model)
 
   local x,y = drawCharacterFramesetDebug(model.p.framesets, "maya",0,0, model.t)
   local x,y = drawCharacterFramesetDebug(model.p.framesets, "freya",x,y, model.t)
+  local x,y = drawCharacterFramesetDebug(model.p.framesets, "ninjatest",x,y, model.t)
   local x,y = drawCharacterFramesetDebug(model.p.framesets, "tshirt_guy",x,y, model.t)
 
   love.graphics.pop()

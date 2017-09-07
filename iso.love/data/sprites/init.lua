@@ -13,6 +13,12 @@ local function load()
       size={x=0.7, y=0.6, z=1.55},
       imageOffset={x=38, y=114},
     },
+    ninjatest= {
+      id="ninjatest",
+      offset={x=0.3, y=0.3, z=0},
+      size={x=0.6, y=0.6, z=1.55},
+      imageOffset={x=38, y=114},
+    },
     tshirt_guy= {
       id="tshirt_guy",
       -- offset={x=0.30, y=0.3, z=0},

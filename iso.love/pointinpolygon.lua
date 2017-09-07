@@ -19,6 +19,18 @@ local function pointInPolygon1(x, y, verts)
   return result
 end
 
+local function shortestDistanceToLine(x,y, pt1, pt2)
+  if pt1[1] == pt2[1] then -- vertical
+    return math.abs(x-pt1[1])
+  elseif pt1[2] == pt2[2] then -- horizontal
+    return math.abs(y-pt1[2])
+  else
+    -- https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+    return math.abs( (pt2[2] - pt1[2])*x - (pt2[1] - pt1[1])*y + pt2[1]*pt1[2] - pt2[2]*pt1[1] ) / math.sqrt(math.pow(pt2[2]-pt1[2], 2) + math.pow(pt2[1]-pt1[2],2))
+  end
+end
+
 return {
-  pointInPolygon=pointInPolygon1
+  pointInPolygon=pointInPolygon1,
+  perpDist=perpDist,
 }

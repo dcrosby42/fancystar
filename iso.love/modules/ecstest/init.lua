@@ -98,7 +98,8 @@ local function setupEstore(estore, resources, opts)
   --   {'pos', {x=1.5,y=0.5,z=1}},
   -- })
   isoWorld:newChild({
-    {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
+    -- {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
+    {'isoSprite', {id='ninjatest', picname="ninjatest.fl.stand.1"}},
     {'pos', {x=1.5,y=-0.5,z=1}},
   })
 
