@@ -16,6 +16,9 @@ end
 
 local function buildPic(stuff, imgname,name,pathstr,rect)
   local img = stuff.images[imgname]
+  if not img then
+    print("pics.lua buildPic wtf nil img "..imgname.." "..pathstr)
+  end
   local x,y,w,h = unpack(rect or {})
   if x == nil then
     x = 0
@@ -104,6 +107,19 @@ Pics.load = function()
     {'br.walk.1', {262,543, 50,100}},
     {'br.walk.2', {390,543, 50,100}},
   })
+
+  for _,pose in ipairs({"fl","bl","fr","br"}) do
+    local frames={}
+    for i=1,24 do
+      local name = pose..".walk."..i
+      local r = {(i-1)*96,0, 96,128}
+      table.insert(frames, {name,r})
+    end
+    buildPicsAndFramesets(stuff, "ninja-spritesheet-"..pose..".png",
+      "ninja",
+      frames
+    )
+  end
 
   print(tdebug(pics))
   -- print(tdebug(framesets))

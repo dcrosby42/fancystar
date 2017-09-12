@@ -74,6 +74,42 @@ local function load()
         }
       }
     },
+    ninja= {
+      id="ninja",
+      offset={x=0.2, y=0.2, z=0},
+      size={x=0.4, y=0.4, z=1.45},
+      imageOffset={x=23, y=102},
+
+      animBundle={
+        fallbackPicname='ninja.fl.walk.1',
+        walk={
+          fl={reduce='flipbook', opts={
+            prefix="ninja.fl.walk.",
+            numFrames=24,
+            -- frameInterval=1/24,
+            frameInterval=1/48,
+          }},
+          fr={reduce='flipbook', opts={
+            prefix="ninja.fr.walk.",
+            numFrames=24,
+            -- frameInterval=1/24,
+            frameInterval=1/48,
+          }},
+          br={reduce='flipbook', opts={
+            prefix="ninja.br.walk.",
+            numFrames=24,
+            -- frameInterval=1/24,
+            frameInterval=1/48,
+          }},
+          bl={reduce='flipbook', opts={
+            prefix="ninja.bl.walk.",
+            numFrames=24,
+            -- frameInterval=1/24,
+            frameInterval=1/48,
+          }},
+        }
+      }
+    },
     blockRed = {
       id="blockRed",
       offset={x=0, y=0, z=0},
