@@ -32,6 +32,9 @@ local function updateCachedBlock(block,e,resources)
     block.spriteId = e.isoSprite.id
     local sprite = resources.sprites[block.spriteId]
     assert(sprite, "No sprite for block.spriteId="..block.spriteId)
+    if e.isoSprite.picname == nil or e.isoSprite.picname == "" then
+      e.isoSprite.picname = sprite.defaultPicname
+    end
     block.spriteOffset = sprite.offset
     block.size = sprite.size
     if sprite.color then
@@ -45,8 +48,8 @@ local function updateCachedBlock(block,e,resources)
   end
   if block.picname ~= e.isoSprite.picname then
     block.picname = e.isoSprite.picname
-    block.pic = resources.pics[e.isoSprite.picname]
-    assert(block.pic, "No sprite for block.picname="..block.picname)
+    block.pic = resources.pics[block.picname]
+    assert(block.pic, "No resources.pics for block.picname="..block.picname)
   end
   block.spritePos = getIsoPos(e)
   block.pos = copyOffset(block.spritePos, block.spriteOffset)

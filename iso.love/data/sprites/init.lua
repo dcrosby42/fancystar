@@ -137,6 +137,7 @@ local function load()
       size={x=1, y=1, z=1},
       imageOffset={x=48, y=128},
       color=Colors.Red,
+      defaultPicname="blender_cube_96",
     },
     blockBlue = {
       id="blockBlue",
@@ -144,6 +145,7 @@ local function load()
       size={x=1, y=1, z=1},
       imageOffset={x=48, y=128},
       color=Colors.Blue,
+      defaultPicname="blender_cube_96",
     },
     blockGreen = {
       id="blockGreen",
@@ -151,6 +153,7 @@ local function load()
       size={x=1, y=1, z=1},
       imageOffset={x=48, y=128},
       color=Colors.Green,
+      defaultPicname="blender_cube_96",
     },
     blockWhite = {
       id="blockWhite",
@@ -158,6 +161,7 @@ local function load()
       size={x=1, y=1, z=1},
       imageOffset={x=48, y=128},
       color=Colors.White,
+      defaultPicname="blender_cube_96",
     },
     blockYellow = {
       id="blockYellow",
@@ -165,6 +169,23 @@ local function load()
       size={x=1, y=1, z=1},
       imageOffset={x=48, y=128},
       color=Colors.Yellow,
+      defaultPicname="blender_cube_96",
+    },
+    blockGrass = {
+      id="blockGrass",
+      offset={x=0, y=0, z=0},
+      size={x=1, y=1, z=1},
+      imageOffset={x=48, y=128},
+      color=Colors.White,
+      defaultPicname="grass_block",
+    },
+    blockCrate = {
+      id="blockCrate",
+      offset={x=0, y=0, z=0},
+      size={x=1, y=1, z=1},
+      imageOffset={x=48, y=128},
+      color=Colors.White,
+      defaultPicname="crate",
     },
   }
 end

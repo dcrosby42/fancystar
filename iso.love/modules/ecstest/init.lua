@@ -98,7 +98,7 @@ local function setupEstore(estore, resources, opts)
   --   {'isoSprite', {id='maya1', picname="maya.fl.stand.1"}},
   --   {'pos', {x=1.5,y=0.5,z=1}},
   -- })
-  
+
   -- isoWorld:newChild({
   --   {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
   --   {'pos', {x=1.5,y=-0.5,z=1}},
@@ -122,12 +122,38 @@ end
 
 Updaters.tick = function(world,action)
   local world,effects = updateEstore(world,action)
+
+  if world.ui.zoomIn then
+    world.xform.sx = math.min(world.xform.sx + 0.1, 3)
+    world.xform.sy = world.xform.sx
+  elseif world.ui.zoomOut then
+    world.xform.sx = math.max(world.xform.sx - 0.1, 0.25)
+    world.xform.sy = world.xform.sx
+  end
   return world,effects
 end
 
 Updaters.keyboard = function(world,action)
   -- addInputEvent(world.input, action)
   keyboardControllerInput(world.input, { up='w', left='a', down='s', right='d', jump='space' }, 'con1', action, world.controllerState)
+  if action.key == "=" then
+    if action.shift then
+      if action.state == "pressed" then
+        world.ui.zoomIn = true
+      else
+        world.ui.zoomIn = false
+      end
+    else
+      world.xform.sx = 1
+      world.xform.sy = 1
+    end
+  elseif action.key == "-" then
+    if action.state == "pressed" then
+      world.ui.zoomOut = true
+    else
+      world.ui.zoomOut = false
+    end
+  end
 
   return world,nil
 end
@@ -270,6 +296,7 @@ local function drawIsoWorld(world, isoWorldEnt, estore, resources)
   -- TODO move this translation up?
   love.graphics.push()
   love.graphics.translate(world.xform.tx,world.xform.ty)
+  love.graphics.scale(world.xform.sx, world.xform.sy)
   for i=1,#sortedBlocks do
     drawSpriteBlock(sortedBlocks[i])
   end
@@ -313,9 +340,12 @@ local function newWorld(opts)
   world.input = {dt=0, events={}}
 
   world.controllerState = {}
-  world.mouse = {x=0,y=0,pick={}}
 
+  world.mouse = {x=0,y=0,pick={}}
   world.xform={tx=450, ty=450, sx=1, sy=1}
+  world.ui={
+    zoomIn=false
+  }
 
   setupEstore(world.estore, world.resources, opts)
 

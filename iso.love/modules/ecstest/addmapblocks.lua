@@ -17,18 +17,21 @@ end
 
 local function addMapBlocks(isoWorld)
   local items = {}
-  tconcat(items, genCheckerboard(-4,-5, 5,4, 0,0, 'blockWhite', 'blockBlue'))
+  -- tconcat(items, genCheckerboard(-4,-5, 5,4, 0,0, 'blockWhite', 'blockBlue'))
+  tconcat(items, genCheckerboard(-4,-5, 5,4, 0,0, 'blockGrass'))
   tconcat(items, genCheckerboard(1,2, 1,2, 1,3, 'blockRed','blockWhite'))
-  tconcat(items, genCheckerboard(1,-3, 1,-3, 1,3, 'blockRed','blockWhite'))
+  tconcat(items, genCheckerboard(1,-3, 1,-3, 1,3, 'blockGrass','blockWhite'))
   tconcat(items, genCheckerboard(1,-2, 1,1, 3,3, 'blockRed','blockWhite'))
-  tconcat(items, genCheckerboard(-1,2, 0,2, 1,1, 'blockGreen','blockYellow'))
-  tconcat(items, genCheckerboard(0,2, 0,2, 2,2, 'blockYellow'))
-  tconcat(items, genCheckerboard(0,1, 0,1, 1,1, 'blockYellow'))
-  tconcat(items, genCheckerboard(-1,-3, -1,-2, 1,1, 'blockYellow'))
+  -- tconcat(items, genCheckerboard(-1,2, 0,2, 1,1, 'blockGreen','blockYellow'))
+  tconcat(items, genCheckerboard(-1,2, 0,2, 1,1, 'blockCrate'))
+  tconcat(items, genCheckerboard(0,2, 0,2, 2,2, 'blockCrate'))
+  tconcat(items, genCheckerboard(0,1, 0,1, 1,1, 'blockCrate'))
+  tconcat(items, genCheckerboard(-1,-3, -1,-2, 1,1, 'blockCrate'))
   -- tconcat(items, genCheckerboard(0,0, 0,0, 1,1, 'blockRed'))
   for _,item in ipairs(items) do
     isoWorld:newChild({
-      {'isoSprite', {id=item.kind, picname="blender_cube_96"}},
+      -- {'isoSprite', {id=item.kind, picname="blender_cube_96"}},
+      {'isoSprite', {id=item.kind}},
       {'pos', item.pos},
     })
   end

@@ -84,6 +84,8 @@ Pics.load = function()
   buildPicAndFrameset(stuff, "ninjatest_96.png", "ninjatest", "fl.stand.1")
 
   buildPic(stuff,"blender_cube_96.png","blender_cube_96",nil,nil)
+  buildPic(stuff,"grass_block.png","grass_block",nil,nil)
+  buildPic(stuff,"woodcrate_block.png","crate",nil,nil)
 
   buildPicsAndFramesets(stuff, "tshirt_guy.png",
     "tshirt_guy", {
