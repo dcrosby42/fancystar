@@ -13,6 +13,63 @@ local function load()
       size={x=0.7, y=0.6, z=1.55},
       imageOffset={x=38, y=114},
     },
+    ninja= {
+      id="ninja",
+      offset={x=0.3, y=0.3, z=0},
+      size={x=0.6, y=0.6, z=1.6},
+      imageOffset={x=48, y=123},
+      animBundle={
+        fallbackPicname='ninja.fl.stand.1',
+        stand={
+          fl={reduce='flipbook', opts={
+            prefix="ninja.fl.stand.",
+            numFrames=1,
+            frameInterval=1/24,
+          }},
+          fr={reduce='flipbook', opts={
+            prefix="ninja.fr.stand.",
+            numFrames=1,
+            frameInterval=1/24,
+          }},
+          br={reduce='flipbook', opts={
+            prefix="ninja.br.stand.",
+            numFrames=1,
+            frameInterval=1/24,
+          }},
+          bl={reduce='flipbook', opts={
+            prefix="ninja.bl.stand.",
+            numFrames=1,
+            frameInterval=1/24,
+          }},
+        },
+        walk={
+          fl={reduce='flipbook', opts={
+            prefix="ninja.fl.walk.",
+            numFrames=24,
+            -- frameInterval=1/24,
+            frameInterval=1/48,
+          }},
+          fr={reduce='flipbook', opts={
+            prefix="ninja.fr.walk.",
+            numFrames=24,
+            -- frameInterval=1/24,
+            frameInterval=1/48,
+          }},
+          br={reduce='flipbook', opts={
+            prefix="ninja.br.walk.",
+            numFrames=24,
+            -- frameInterval=1/24,
+            frameInterval=1/48,
+          }},
+          bl={reduce='flipbook', opts={
+            prefix="ninja.bl.walk.",
+            numFrames=24,
+            -- frameInterval=1/24,
+            frameInterval=1/48,
+          }},
+        }
+      }
+    },
     ninjatest= {
       id="ninjatest",
       offset={x=0.3, y=0.3, z=0},
@@ -70,42 +127,6 @@ local function load()
             prefix="tshirt_guy.bl.walk.",
             numFrames=2,
             frameInterval=0.15,
-          }},
-        }
-      }
-    },
-    ninja= {
-      id="ninja",
-      offset={x=0.2, y=0.2, z=0},
-      size={x=0.4, y=0.4, z=1.45},
-      imageOffset={x=23, y=102},
-
-      animBundle={
-        fallbackPicname='ninja.fl.walk.1',
-        walk={
-          fl={reduce='flipbook', opts={
-            prefix="ninja.fl.walk.",
-            numFrames=24,
-            -- frameInterval=1/24,
-            frameInterval=1/48,
-          }},
-          fr={reduce='flipbook', opts={
-            prefix="ninja.fr.walk.",
-            numFrames=24,
-            -- frameInterval=1/24,
-            frameInterval=1/48,
-          }},
-          br={reduce='flipbook', opts={
-            prefix="ninja.br.walk.",
-            numFrames=24,
-            -- frameInterval=1/24,
-            frameInterval=1/48,
-          }},
-          bl={reduce='flipbook', opts={
-            prefix="ninja.bl.walk.",
-            numFrames=24,
-            -- frameInterval=1/24,
-            frameInterval=1/48,
           }},
         }
       }

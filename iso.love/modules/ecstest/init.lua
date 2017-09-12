@@ -79,7 +79,7 @@ local function setupEstore(estore, resources, opts)
     {'isoSpriteAnimated', {timer='animation'}},
     {'timer', {name='animation', countDown=false}},
     {'controller', {id='con1'}},
-    {'isoDebug', {on=true}},
+    {'isoDebug', {on=true, pickable=true}},
     -- {'script', {scriptName='moverTest', on='tick'}}
   })
 
@@ -98,11 +98,11 @@ local function setupEstore(estore, resources, opts)
   --   {'isoSprite', {id='maya1', picname="maya.fl.stand.1"}},
   --   {'pos', {x=1.5,y=0.5,z=1}},
   -- })
-  isoWorld:newChild({
-    -- {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
-    {'isoSprite', {id='ninjatest', picname="ninjatest.fl.stand.1"}},
-    {'pos', {x=1.5,y=-0.5,z=1}},
-  })
+  
+  -- isoWorld:newChild({
+  --   {'isoSprite', {id='freya1', picname="freya.fl.stand.1"}},
+  --   {'pos', {x=1.5,y=-0.5,z=1}},
+  -- })
 
 end
 

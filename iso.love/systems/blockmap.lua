@@ -52,6 +52,7 @@ local function updateCachedBlock(block,e,resources)
   block.pos = copyOffset(block.spritePos, block.spriteOffset)
   if e.isoDebug and e.isoDebug.on then
     block.debug.on = true
+    block.debug.pickable = e.isoDebug.pickable
   else
     block.debug.on = false
   end
@@ -77,7 +78,9 @@ local system = defineUpdateSystem(hasComps('isoWorld'), function(isoWorldEnt,est
     if blocksByEid[e.eid] then
       -- UPDATE CACHED BLOCK
       updateCachedBlock(blocksByEid[e.eid], e, resources)
-      blocksByEid[e.eid].debug.on = false -- TODO better mouse picking
+      if blocksByEid[e.eid].debug.pickable then
+        blocksByEid[e.eid].debug.on = false -- TODO better mouse picking
+      end
     else
       -- ADD NEW CACHED BLOCK
       blocksByEid[e.eid] = updateCachedBlock(newCachedBlock(e), e, resources)

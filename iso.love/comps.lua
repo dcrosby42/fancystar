@@ -30,7 +30,7 @@ Comp.define("controller", {'id','','leftx',0,'lefty',0,'jump',0})
 --
 Comp.define("color",{'color',{255,255,255}})
 Comp.define("isoWorld", {'blockCache',{byEid={},sorted={},zoned={}},'_transientProps',{'blockCache'}})
-Comp.define("isoDebug", {'on',false})
+Comp.define("isoDebug", {'on',false,'pickable',false})
 Comp.define("isoSprite", {'id','', 'picname','', 'dir','fl', 'action','stand'})
 Comp.define("isoSpriteAnimated", {'timer',''})
 Comp.define("pos", {'x',0,'y',0,'z',0})

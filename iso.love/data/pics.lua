@@ -120,6 +120,13 @@ Pics.load = function()
       frames
     )
   end
+  buildPicsAndFramesets(stuff, "ninja-standing-sheet.png",
+    "ninja", {
+    {'bl.stand.1', {0,0, 96,128}},
+    {'br.stand.1', {96,0, 96,128}},
+    {'fl.stand.1', {192,0, 96,128}},
+    {'fr.stand.1', {288,0, 96,128}},
+  })
 
   print(tdebug(pics))
   -- print(tdebug(framesets))
