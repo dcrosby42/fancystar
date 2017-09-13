@@ -161,7 +161,7 @@ end
 local function addBlockToIsoWorld(world, pos, spriteId)
   world.estore:seekEntity(hasComps('isoWorld'), function(e)
     e:newChild({
-      {'isoSprite', {id=spriteId, picname="blender_cube_96"}},
+      {'isoSprite', {id=spriteId}},
       {'pos', pos},
     })
   end)
@@ -182,15 +182,15 @@ Updaters.mouse = function(world,action)
         else
           pos.x = pos.x - 1
         end
-        addBlockToIsoWorld(world, pos, 'blockGreen')
+        addBlockToIsoWorld(world, pos, 'blockGrass')
       elseif face == 2 then
         local pos = shallowclone(block.pos)
         pos.y = pos.y - 1
-        addBlockToIsoWorld(world, pos, 'blockGreen')
+        addBlockToIsoWorld(world, pos, 'blockGrass')
       elseif face == 3 then
         local pos = shallowclone(block.pos)
         pos.z = pos.z + 1
-        addBlockToIsoWorld(world, pos, 'blockGreen')
+        addBlockToIsoWorld(world, pos, 'blockGrass')
       end
     end
   end
