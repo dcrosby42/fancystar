@@ -192,6 +192,7 @@ return {
   listAllResourceFiles=function() return tconcat(listAssetFiles(), listDataFiles()) end,
   loadFile=loadFile,
   saveFile=saveFile,
+  getFileType=getFileType,
   test=function()
   end,
 }

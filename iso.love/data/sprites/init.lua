@@ -23,23 +23,23 @@ local function load()
         stand={
           fl={reduce='flipbook', opts={
             prefix="ninja.fl.stand.",
-            numFrames=1,
-            frameInterval=1/24,
+            numFrames=25,
+            frameInterval=1/25,
           }},
           fr={reduce='flipbook', opts={
             prefix="ninja.fr.stand.",
-            numFrames=1,
-            frameInterval=1/24,
+            numFrames=25,
+            frameInterval=1/25,
           }},
           br={reduce='flipbook', opts={
             prefix="ninja.br.stand.",
-            numFrames=1,
-            frameInterval=1/24,
+            numFrames=25,
+            frameInterval=1/25,
           }},
           bl={reduce='flipbook', opts={
             prefix="ninja.bl.stand.",
-            numFrames=1,
-            frameInterval=1/24,
+            numFrames=25,
+            frameInterval=1/25,
           }},
         },
         walk={

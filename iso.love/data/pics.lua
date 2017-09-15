@@ -5,8 +5,10 @@ local function loadAllImages()
   local imgsByName = {}
   local imgfiles = DataLoader.listAssetFiles("images")
   for _,fname in ipairs(imgfiles) do
-    local name = fname:match("images/(.+)")
-    imgsByName[name] = love.graphics.newImage(fname)
+    if DataLoader.getFileType(fname) == "image" then
+      local name = fname:match("images/(.+)")
+      imgsByName[name] = love.graphics.newImage(fname)
+    end
   end
   return imgsByName
 end
@@ -66,7 +68,32 @@ local function buildPicsAndFramesets(stuff, imgname, name, defs)
   end
 end
 
-Pics.load = function()
+local function loadAnimSheet(stuff, charName, animName, jsonFile)
+  local data = DataLoader.loadFile(jsonFile)
+  for s,strip in ipairs(data.strips) do
+    local top=(s-1)*strip.frame_height
+    local pose = strip.name
+    local frames={}
+    for i=1, strip.frame_count do
+      local frameName = pose.."."..animName.."."..i
+      local rect = {
+        (i-1)*strip.frame_width, top,
+        strip.frame_width, strip.frame_height,
+      }
+      table.insert(frames, {frameName,rect})
+    end
+    buildPicsAndFramesets(stuff, data.spritesheet,
+      charName,
+      frames
+    )
+  end
+end
+
+local Pics_load_cached = nil
+Pics.load = function(reload)
+  if Pics_load_cached and not reload then
+    return Pics_load_cached
+  end
   local images = loadAllImages()
   local pics = {}
   local framesets = {}
@@ -110,28 +137,33 @@ Pics.load = function()
     {'br.walk.2', {390,543, 50,100}},
   })
 
-  for _,pose in ipairs({"fl","bl","fr","br"}) do
-    local frames={}
-    for i=1,24 do
-      local name = pose..".walk."..i
-      local r = {(i-1)*96,0, 96,128}
-      table.insert(frames, {name,r})
-    end
-    buildPicsAndFramesets(stuff, "ninja-spritesheet-"..pose..".png",
-      "ninja",
-      frames
-    )
-  end
-  buildPicsAndFramesets(stuff, "ninja-standing-sheet.png",
-    "ninja", {
-    {'bl.stand.1', {0,0, 96,128}},
-    {'br.stand.1', {96,0, 96,128}},
-    {'fl.stand.1', {192,0, 96,128}},
-    {'fr.stand.1', {288,0, 96,128}},
-  })
+  -- for _,pose in ipairs({"fl","bl","fr","br"}) do
+  --   local frames={}
+  --   for i=1,24 do
+  --     local name = pose..".walk."..i
+  --     local r = {(i-1)*96,0, 96,128}
+  --     table.insert(frames, {name,r})
+  --   end
+  --   buildPicsAndFramesets(stuff, "ninja-spritesheet-"..pose..".png",
+  --     "ninja",
+  --     frames
+  --   )
+  -- end
+  loadAnimSheet(stuff, "ninja", "walk", "assets/images/ninja.walk.json")
 
-  print(tdebug(pics))
+  loadAnimSheet(stuff, "ninja", "stand", "assets/images/ninja.stand.json")
+
+  -- buildPicsAndFramesets(stuff, "ninja-standing-sheet.png",
+  --   "ninja", {
+  --   {'bl.stand.1', {0,0, 96,128}},
+  --   {'br.stand.1', {96,0, 96,128}},
+  --   {'fl.stand.1', {192,0, 96,128}},
+  --   {'fr.stand.1', {288,0, 96,128}},
+  -- })
+
+  -- print(tdebug(pics))
   -- print(tdebug(framesets))
+  Pics_load_cached = stuff
   return stuff
 end
 

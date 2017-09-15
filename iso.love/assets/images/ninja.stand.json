@@ -1,0 +1,40 @@
+{
+  "spritesheet": "ninja.stand.png",
+  "metadata": "ninja.stand.json",
+  "width": 2400,
+  "height": 512,
+  "strips": [
+    {
+      "name": "bl",
+      "width": 2400,
+      "height": 128,
+      "frame_count": 25,
+      "frame_width": 96,
+      "frame_height": 128
+    },
+    {
+      "name": "br",
+      "width": 2400,
+      "height": 128,
+      "frame_count": 25,
+      "frame_width": 96,
+      "frame_height": 128
+    },
+    {
+      "name": "fl",
+      "width": 2400,
+      "height": 128,
+      "frame_count": 25,
+      "frame_width": 96,
+      "frame_height": 128
+    },
+    {
+      "name": "fr",
+      "width": 2400,
+      "height": 128,
+      "frame_count": 25,
+      "frame_width": 96,
+      "frame_height": 128
+    }
+  ]
+}
