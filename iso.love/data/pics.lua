@@ -137,29 +137,10 @@ Pics.load = function(reload)
     {'br.walk.2', {390,543, 50,100}},
   })
 
-  -- for _,pose in ipairs({"fl","bl","fr","br"}) do
-  --   local frames={}
-  --   for i=1,24 do
-  --     local name = pose..".walk."..i
-  --     local r = {(i-1)*96,0, 96,128}
-  --     table.insert(frames, {name,r})
-  --   end
-  --   buildPicsAndFramesets(stuff, "ninja-spritesheet-"..pose..".png",
-  --     "ninja",
-  --     frames
-  --   )
-  -- end
   loadAnimSheet(stuff, "ninja", "walk", "assets/images/ninja.walk.json")
 
   loadAnimSheet(stuff, "ninja", "stand", "assets/images/ninja.stand.json")
 
-  -- buildPicsAndFramesets(stuff, "ninja-standing-sheet.png",
-  --   "ninja", {
-  --   {'bl.stand.1', {0,0, 96,128}},
-  --   {'br.stand.1', {96,0, 96,128}},
-  --   {'fl.stand.1', {192,0, 96,128}},
-  --   {'fr.stand.1', {288,0, 96,128}},
-  -- })
 
   -- print(tdebug(pics))
   -- print(tdebug(framesets))
