@@ -111,7 +111,15 @@ Pics.load = function(reload)
   buildPicAndFrameset(stuff, "ninjatest_96.png", "ninjatest", "fl.stand.1")
 
   buildPic(stuff,"blender_cube_96.png","blender_cube_96",nil,nil)
+
   buildPic(stuff,"grass_block.png","grass_block",nil,nil)
+  buildPic(stuff,"grass_block_path_1.png","grass_block_path_1",nil,nil)
+  buildPic(stuff,"grass_block_path_2.png","grass_block_path_2",nil,nil)
+  buildPic(stuff,"grass_block_path_corner_1.png","grass_block_path_corner_1",nil,nil)
+  buildPic(stuff,"grass_block_path_corner_2.png","grass_block_path_corner_2",nil,nil)
+  buildPic(stuff,"grass_block_path_corner_3.png","grass_block_path_corner_3",nil,nil)
+  buildPic(stuff,"grass_block_path_corner_4.png","grass_block_path_corner_4",nil,nil)
+
   buildPic(stuff,"woodcrate_block.png","crate",nil,nil)
 
   buildPicsAndFramesets(stuff, "tshirt_guy.png",
