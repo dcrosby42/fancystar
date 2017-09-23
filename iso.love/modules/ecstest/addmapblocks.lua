@@ -91,6 +91,14 @@ local function grassField()
     end
   end
 
+  cubeSet(sp, 2,2,1, "blockGrassPathCorner1")
+  for y=3,9 do cubeSet(sp,2,y,1,"blockGrassPath1") end
+  for y=3,9 do cubeSet(sp,10,y,1,"blockGrassPath1") end
+  for x=3,9 do cubeSet(sp,x,2,1,"blockGrassPath2") end
+  for x=3,9 do cubeSet(sp,x,10,1,"blockGrassPath2") end
+  cubeSet(sp, 10,2,1, "blockGrassPathCorner2")
+  cubeSet(sp, 10,10,1, "blockGrassPathCorner3")
+  cubeSet(sp, 2,10,1, "blockGrassPathCorner4")
   return cubeToItems(sp,{loc={-5,-5,0}})
 end
 
